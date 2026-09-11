@@ -71,15 +71,25 @@ sbw_estimate = function(object, outcome, estimand, ...) {
   UseMethod("sbw_estimate")
 }
 
-#' @param probs Vector of probabilities in (0, 1), for
-#'   `estimand \%in\% c("quantile_diff", "quantile_ratio")`. Default `0.5`
-#'   (the median).
+#' @param probs Vector of probabilities in (0, 1), used when `estimand` is
+#'   `"quantile_diff"` or `"quantile_ratio"`. Default `0.5` (the median).
 #' @param horizon Time `t0` at which to evaluate the survival ratio; required
 #'   for `estimand = "survival_ratio"`.
 #' @param B Number of bootstrap replicates.
 #' @param alpha Significance level for the confidence interval.
 #' @param ci_method Either `"wald"` (default) or `"percentile"`.
 #' @param seed Optional seed set at the start of the bootstrap.
+#' @examples
+#' set.seed(1)
+#' n = 100
+#' trial_baseline = data.frame(
+#'   age = rnorm(n, 50, 10),
+#'   region = sample(c("N", "S"), n, replace = TRUE),
+#'   arm = rbinom(n, 1, 0.5)
+#' )
+#' trial_baseline$Y = rbinom(n, 1, plogis(-1 + 0.02 * trial_baseline$age))
+#' sbw = sbw_weights(~ age + region, data = trial_baseline, treatment = arm)
+#' sbw_estimate(sbw, Y ~ 1, estimand = "RR", B = 200, seed = 1)
 #' @rdname sbw_estimate
 #' @export
 sbw_estimate.sbw_fit = function(object, outcome, estimand,

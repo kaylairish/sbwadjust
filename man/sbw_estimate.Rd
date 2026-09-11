@@ -36,9 +36,8 @@ accepted; an uncovered estimand means: take \code{weights(object)} and run
 
 \item{...}{Passed to methods.}
 
-\item{probs}{Vector of probabilities in (0, 1), for
-\verb{estimand \\\%in\\\% c("quantile_diff", "quantile_ratio")}. Default \code{0.5}
-(the median).}
+\item{probs}{Vector of probabilities in (0, 1), used when \code{estimand} is
+\code{"quantile_diff"} or \code{"quantile_ratio"}. Default \code{0.5} (the median).}
 
 \item{horizon}{Time \code{t0} at which to evaluate the survival ratio; required
 for \code{estimand = "survival_ratio"}.}
@@ -56,4 +55,16 @@ An object of class \code{sbw_estimate}.
 }
 \description{
 Estimate a treatment effect from a fitted \code{sbw_fit} object
+}
+\examples{
+set.seed(1)
+n = 100
+trial_baseline = data.frame(
+  age = rnorm(n, 50, 10),
+  region = sample(c("N", "S"), n, replace = TRUE),
+  arm = rbinom(n, 1, 0.5)
+)
+trial_baseline$Y = rbinom(n, 1, plogis(-1 + 0.02 * trial_baseline$age))
+sbw = sbw_weights(~ age + region, data = trial_baseline, treatment = arm)
+sbw_estimate(sbw, Y ~ 1, estimand = "RR", B = 200, seed = 1)
 }
