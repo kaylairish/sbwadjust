@@ -3,19 +3,22 @@ Title: Stable Balancing Weights for Covariate Adjustment in Trials
 Version: 0.0.0.9000
 Authors@R:
     person("Kayla", "Irish", , "kayla.a.irish@gmail.com", role = c("aut", "cre"))
-Description: Core routines behind "Simple Covariate Adjustment for Many
-    Estimands Using Stable Balancing Weights" (Irish, Zubizarreta, Luedtke):
-    fitting stable balancing weights (SBW) for a two-arm study by a
-    closed-form solve with a nonnegative quadratic-programming fallback,
-    inverse-probability weights as a comparison, and weighted Kaplan-Meier
-    survival-ratio point estimates with bootstrap confidence intervals. A
-    general-purpose covariate-adjustment interface is in development; the
-    current functions expose the exact choices made in the paper.
+Description: Covariate adjustment for randomized trials using stable
+    balancing weights (SBW), as proposed in "Simple Covariate Adjustment for
+    Many Estimands Using Stable Balancing Weights" (Irish, Zubizarreta,
+    Luedtke). sbw_weights() fits exact-balance SBW for a two-arm study by a
+    closed-form solve with a nonnegative quadratic-programming fallback;
+    sbw_estimate() computes a closed menu of treatment-effect estimands
+    (average treatment effect, relative risk, survival ratio, Mann-Whitney,
+    quantile contrasts) from the fitted weights, with bootstrap confidence
+    intervals. Also includes inverse-probability weights as a comparison
+    method.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports:
+    graphics,
     quadprog,
     stats,
     survival

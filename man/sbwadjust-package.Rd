@@ -6,7 +6,7 @@
 \alias{sbwadjust-package}
 \title{sbwadjust: Stable Balancing Weights for Covariate Adjustment in Trials}
 \description{
-Shared functions for the simulation studies and application in "Simple Covariate Adjustment for Many Estimands Using Stable Balancing Weights": fitting stable balancing weights (SBW), computing bootstrap-CI Kaplan-Meier survival-ratio estimates, and the covariate transforms and NHANES resampling helpers used to construct the simulation DGPs.
+Covariate adjustment for randomized trials using stable balancing weights (SBW), as proposed in "Simple Covariate Adjustment for Many Estimands Using Stable Balancing Weights" (Irish, Zubizarreta, Luedtke). sbw_weights() fits exact-balance SBW for a two-arm study by a closed-form solve with a nonnegative quadratic-programming fallback; sbw_estimate() computes a closed menu of treatment-effect estimands (average treatment effect, relative risk, survival ratio, Mann-Whitney, quantile contrasts) from the fitted weights, with bootstrap confidence intervals. Also includes inverse-probability weights as a comparison method.
 }
 \author{
 \strong{Maintainer}: Kayla Irish \email{kayla.a.irish@gmail.com}
