@@ -26,6 +26,14 @@
 #' `q_hat(u) = inf{y : F_w(y) >= u}` for the weighted empirical CDF `F_w`,
 #' the natural SBW-weighted analogue of `stats::quantile(type = 1)`.
 #'
+#' Normalizes by `sum(w)`, not `length(y)`. By construction (the balancing
+#' QP's intercept equality constraint), SBW weights for an arm sum to that
+#' arm's size -- but only up to solver precision, since the nonneg-QP
+#' fallback's clipping of negative numerical dust can nudge the sum a hair
+#' away from it. Dividing by `sum(w)` keeps `F_w` a valid CDF (`F_w(Inf) = 1`
+#' exactly) regardless, and avoids having to track which arm's size applies
+#' to whatever `w` subset was passed in.
+#'
 #' @param y Numeric outcome vector for one arm.
 #' @param w Nonnegative weights, same length as `y`.
 #' @param probs Vector of probabilities in (0, 1).
