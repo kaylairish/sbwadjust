@@ -1,3 +1,5 @@
 ^LICENSE\.md$
 ^\.Rproj\.user$
 ^\.git$
+^cran-comments\.md$
+^CRAN-SUBMISSION$
