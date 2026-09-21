@@ -1,16 +1,3 @@
-# sbwadjust 0.3.0
-
-New estimator pair for restricted mean survival time (RMST), added for
-sbw-randomization-schemes (Paper 2)'s RMST outcome type.
-
-* New `weighted_km_rmst_diff()`: weighted-KM RMST difference
-  (E[min(T1,t*)] - E[min(T0,t*)]) with a Wald CI, mirroring
-  `km_ratio_loglog_greenwood()`'s structure for the survival-ratio estimand
-  but additive rather than ratio/log-scale (RMST needs no log transform).
-* New `boot_km_rmst()`: bootstrap CI (Wald or percentile) for the SBW/IPW-
-  weighted RMST difference, with the same fallback-to-unadjusted-on-failure
-  behavior and SBW clipping diagnostics as `boot_km_ratio()`.
-
 # sbwadjust 0.2.0
 
 "Usable by a stranger" release: a user-facing formula API on top of the v0.1 core.

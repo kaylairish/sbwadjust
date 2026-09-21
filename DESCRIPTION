@@ -1,6 +1,6 @@
 Package: sbwadjust
 Title: Stable Balancing Weights for Covariate Adjustment in Trials
-Version: 0.3.0
+Version: 0.2.0
 Authors@R:
     person("Kayla", "Irish", , "kayla.a.irish@gmail.com", role = c("aut", "cre"))
 Description: Covariate adjustment for randomized trials using stable

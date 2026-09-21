@@ -1,6 +1,6 @@
 ## Submission
 
-First CRAN submission of sbwadjust (0.3.0).
+First CRAN submission of sbwadjust (0.2.0).
 
 ## Test environments
 

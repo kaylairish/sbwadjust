@@ -55,7 +55,6 @@ remotes::install_github("kaylairish/sbwadjust")
 | `R/weights.R` | `get_weights_for_group_neg`, `get_weights_for_group_nonneg`, `get_sbws_for_study` — fit SBW for one arm or a full two-arm study: a closed-form solve first, falling back to a nonnegative quadratic program when the closed-form weights go negative. |
 | `R/km_ratio.R` | `km_ratio_loglog_greenwood`, `boot_km_ratio` — weighted Kaplan–Meier survival-ratio point estimates and bootstrap CIs (Wald or percentile); `sbw_estimate(..., estimand = "survival_ratio")` wraps `boot_km_ratio`. |
 | `R/ipw.R` | `get_ipws_for_study` — inverse-probability weights, used as the `weight_type = "IPW"` comparison in `boot_km_ratio`. |
-| `R/km_rmst.R` | `weighted_km_rmst_diff`, `boot_km_rmst` — weighted Kaplan–Meier restricted-mean-survival-time difference (Wald CI) and bootstrap CI, mirroring the survival-ratio pair. |
 
 > **Estimand coverage note.** ATE, RR, and survival ratio have full worked
 > estimators and simulations in the paper. `mann_whitney` implements only the
@@ -63,10 +62,8 @@ remotes::install_github("kaylairish/sbwadjust")
 > outcomes are future work). Quantile contrasts use the natural SBW-weighted
 > empirical-quantile plug-in (a generalized-inverse weighted quantile,
 > arm-specific difference/ratio, bootstrap CI); this recipe isn't spelled out
-> verbatim in the paper, unlike the other estimands. Restricted mean survival
-> time (RMST) difference is available via `weighted_km_rmst_diff()` and
-> `boot_km_rmst()` (added in 0.3.0); it is not reachable through
-> `sbw_estimate()` yet.
+> verbatim in the paper, unlike the other estimands. RMST is not included in
+> this release.
 
 ## Tests
 
