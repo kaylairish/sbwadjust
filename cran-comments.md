@@ -10,7 +10,9 @@ First CRAN submission of sbwadjust (0.2.0).
 
 ## R CMD check results
 
-0 errors | 0 warnings | 2 notes
+0 errors | 0 warnings | 1 note
+
+The note is the CRAN incoming feasibility check, covering two items:
 
 * "New submission" -- this is the package's first release.
 
