@@ -12,8 +12,8 @@ factor/character vector.}
 }
 \value{
 A list with \code{A} (integer 0/1 vector) and \code{levels} (named integer
-vector mapping each original level/label to 0 or 1; for numeric/logical
-input this is \verb{c(\\}0\\verb{ = 0L, \\}1\\verb{ = 1L)}).
+vector mapping each original level/label to 0 or 1; for numeric input the
+names are "0" and "1", and for logical input "FALSE" and "TRUE").
 }
 \description{
 Recode a raw treatment vector to 0/1, recording the level map used

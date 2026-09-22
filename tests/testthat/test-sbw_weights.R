@@ -66,7 +66,12 @@ test_that("get_sbws_for_study falls back to nonneg QP when closed-form goes nega
       0.884131139366741, 0.56326352530541, 0.598915482423336),
     tolerance = 1e-8
   )
-  expect_equal(out$n_clipped, 2L)
-  # exact value is BLAS-dependent floating-point dust from the QP solve
+  # Both the count and the magnitude of clipped entries are BLAS-dependent:
+  # the two boundary weights come back as dust of either sign, so whether
+  # they register as "clipped" differs by platform (0 on Windows R-devel, 2
+  # on macOS). What must hold is that any clipping is dust, and the returned
+  # weights are nonnegative; the pinned `w` above already fixes the solution.
+  expect_lte(out$n_clipped, 2L)
   expect_lt(out$max_abs_clipped, 1e-8)
+  expect_true(all(out$w >= 0))
 })

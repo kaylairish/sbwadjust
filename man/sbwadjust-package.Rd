@@ -6,7 +6,7 @@
 \alias{sbwadjust-package}
 \title{sbwadjust: Stable Balancing Weights for Covariate Adjustment in Trials}
 \description{
-Covariate adjustment for randomized trials using stable balancing weights (SBW), as proposed by Irish, Zubizarreta, and Luedtke (2026) \href{https://arxiv.org/abs/2609.01638}{arXiv:2609.01638}. 'sbw_weights()' fits exact-balance SBW for a two-arm study by a closed-form solve with a nonnegative quadratic-programming fallback; 'sbw_estimate()' computes a closed menu of treatment-effect estimands (average treatment effect, relative risk, survival ratio, Mann-Whitney, quantile contrasts) from the fitted weights, with bootstrap confidence intervals. Also includes inverse-probability weights as a comparison method.
+Covariate adjustment for randomized trials using stable balancing weights (SBW), as proposed by Irish, Zubizarreta, and Luedtke (2026) \doi{10.48550/arXiv.2609.01638}. 'sbw_weights()' fits exact-balance SBW for a two-arm study by a closed-form solve with a nonnegative quadratic-programming fallback; 'sbw_estimate()' computes a closed menu of treatment-effect estimands (average treatment effect, relative risk, survival ratio, Mann-Whitney, quantile contrasts) from the fitted weights, with bootstrap confidence intervals. Also includes inverse-probability weights as a comparison method.
 }
 \seealso{
 Useful links:

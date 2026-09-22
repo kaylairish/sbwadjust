@@ -26,8 +26,8 @@
 #' @param raw Raw treatment vector: numeric 0/1, logical, or a two-level
 #'   factor/character vector.
 #' @return A list with `A` (integer 0/1 vector) and `levels` (named integer
-#'   vector mapping each original level/label to 0 or 1; for numeric/logical
-#'   input this is `c(\`0\` = 0L, \`1\` = 1L)`).
+#'   vector mapping each original level/label to 0 or 1; for numeric input the
+#'   names are "0" and "1", and for logical input "FALSE" and "TRUE").
 #' @keywords internal
 .recode_treatment = function(raw) {
   if (is.logical(raw)) {

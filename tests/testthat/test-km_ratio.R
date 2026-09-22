@@ -78,9 +78,12 @@ test_that("boot_km_ratio (SBW, Wald CI) matches pinned bootstrap output", {
   expect_equal(res$boot_n_finite_reps, 200L)
   expect_equal(res$sbw_n_clipped_full, 0L)
   expect_equal(res$sbw_max_abs_clipped_full, 0)
-  expect_equal(res$sbw_n_clipped_boot_mean, 0.015, tolerance = 1e-8)
-  expect_equal(res$sbw_n_clipped_boot_max, 1L)
-  # exact value is BLAS-dependent floating-point dust from the QP solve
+  # Clipping counts across resamples are BLAS-dependent (0.015 on macOS,
+  # 0.005 on Windows R-devel): boundary weights come back as dust of either
+  # sign. Only the dust bound is portable; the pinned estimates above fix
+  # the actual bootstrap output.
+  expect_lt(res$sbw_n_clipped_boot_mean, 0.1)
+  expect_lte(res$sbw_n_clipped_boot_max, 1L)
   expect_lt(res$sbw_max_abs_clipped_boot_max, 1e-8)
 })
 
