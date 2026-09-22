@@ -11,6 +11,7 @@ sbw_estimate(object, outcome, estimand, ...)
   object,
   outcome,
   estimand,
+  data = NULL,
   probs = 0.5,
   horizon = NULL,
   B = 1500,
@@ -24,9 +25,8 @@ sbw_estimate(object, outcome, estimand, ...)
 \item{object}{An \code{sbw_fit} from \code{\link[=sbw_weights]{sbw_weights()}}.}
 
 \item{outcome}{A one-sided-response formula naming the outcome, e.g.
-\code{Y ~ 1} (or \code{Surv(time, status) ~ 1} for \code{estimand = "survival_ratio"},
-which requires the \code{survival} package to be attached so \code{Surv()}
-resolves in the formula's environment).}
+\code{Y ~ 1} (or \code{Surv(time, status) ~ 1} for \code{estimand = "survival_ratio"};
+\code{Surv()} resolves without attaching the \code{survival} package).}
 
 \item{estimand}{One of \code{"ATE"}, \code{"RR"} (relative risk, i.e. ratio of
 weighted arm means), \code{"survival_ratio"}, \code{"mann_whitney"},
@@ -35,6 +35,12 @@ accepted; an uncovered estimand means: take \code{weights(object)} and run
 (and bootstrap) your own estimator.}
 
 \item{...}{Passed to methods.}
+
+\item{data}{Optional data frame holding the outcome, for when the weights
+were fit on baseline data before outcomes were available. Its rows must
+correspond one-to-one, in the same order, to the data passed to
+\code{\link[=sbw_weights]{sbw_weights()}}; any column the two share is checked for agreement.
+Defaults to the data the weights were fit on.}
 
 \item{probs}{Vector of probabilities in (0, 1), used when \code{estimand} is
 \code{"quantile_diff"} or \code{"quantile_ratio"}. Default \code{0.5} (the median).}
@@ -56,6 +62,13 @@ An object of class \code{sbw_estimate}.
 \description{
 Estimate a treatment effect from a fitted \code{sbw_fit} object
 }
+\details{
+The bootstrap resamples participants independently (a
+nonparametric row bootstrap), which is valid under simple randomization.
+It does not account for stratified or covariate-adaptive randomization
+(permuted blocks, minimization, biased coin); under those designs the
+confidence intervals may be miscalibrated.
+}
 \examples{
 set.seed(1)
 n = 100
@@ -64,7 +77,10 @@ trial_baseline = data.frame(
   region = sample(c("N", "S"), n, replace = TRUE),
   arm = rbinom(n, 1, 0.5)
 )
-trial_baseline$Y = rbinom(n, 1, plogis(-1 + 0.02 * trial_baseline$age))
+# Design stage: fit weights before any outcomes exist.
 sbw = sbw_weights(~ age + region, data = trial_baseline, treatment = arm)
-sbw_estimate(sbw, Y ~ 1, estimand = "RR", B = 200, seed = 1)
+
+# Analysis stage: outcomes arrive later, one row per participant, same order.
+trial_outcomes = data.frame(Y = rbinom(n, 1, plogis(-1 + 0.02 * trial_baseline$age)))
+sbw_estimate(sbw, Y ~ 1, estimand = "RR", data = trial_outcomes, B = 200, seed = 1)
 }

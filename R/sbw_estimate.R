@@ -60,13 +60,61 @@
   sum(cmp * outer(w1, w0)) / (sum(w1) * sum(w0))
 }
 
+#' Resolve the outcome formula against the analysis-stage data
+#'
+#' Checks that `data` lines up row-for-row with the baseline data the weights
+#' were fit on (same row count; any column the two share must agree), and
+#' makes `Surv()` resolve without the user attaching `survival`.
+#'
+#' @param outcome Outcome formula, as passed to [sbw_estimate()].
+#' @param data Analysis-stage data frame, or `NULL` to use `object$data`.
+#' @param object The `sbw_fit`.
+#' @return The model response: a numeric vector, or a `Surv` matrix.
+#' @keywords internal
+.resolve_outcome = function(outcome, data, object) {
+  baseline = object$data
+  if (is.null(data)) {
+    data = baseline
+  } else {
+    data = as.data.frame(data)
+    if (nrow(data) != object$n) {
+      stop("`data` has ", nrow(data), " rows but the weights were fit on ", object$n,
+           "; rows must correspond one-to-one, in the same order.")
+    }
+    same_col = function(a, b) {
+      if (is.numeric(a) && is.numeric(b)) isTRUE(all.equal(a, b, check.attributes = FALSE))
+      else identical(as.character(a), as.character(b))
+    }
+    for (nm in intersect(names(data), names(baseline))) {
+      if (!same_col(data[[nm]], baseline[[nm]])) {
+        stop("Column `", nm, "` differs between `data` and the data the weights were fit on; ",
+             "rows must correspond one-to-one, in the same order.")
+      }
+    }
+  }
+
+  env = new.env(parent = environment(outcome))
+  env$Surv = survival::Surv
+  environment(outcome) = env
+
+  mf = stats::model.frame(outcome, data = data, na.action = stats::na.pass)
+  resp = stats::model.response(mf)
+  if (anyNA(resp)) stop("Missing values in the outcome are not supported.")
+  resp
+}
+
 #' Estimate a treatment effect from a fitted `sbw_fit` object
+#'
+#' @details The bootstrap resamples participants independently (a
+#'   nonparametric row bootstrap), which is valid under simple randomization.
+#'   It does not account for stratified or covariate-adaptive randomization
+#'   (permuted blocks, minimization, biased coin); under those designs the
+#'   confidence intervals may be miscalibrated.
 #'
 #' @param object An `sbw_fit` from [sbw_weights()].
 #' @param outcome A one-sided-response formula naming the outcome, e.g.
-#'   `Y ~ 1` (or `Surv(time, status) ~ 1` for `estimand = "survival_ratio"`,
-#'   which requires the `survival` package to be attached so `Surv()`
-#'   resolves in the formula's environment).
+#'   `Y ~ 1` (or `Surv(time, status) ~ 1` for `estimand = "survival_ratio"`;
+#'   `Surv()` resolves without attaching the `survival` package).
 #' @param estimand One of `"ATE"`, `"RR"` (relative risk, i.e. ratio of
 #'   weighted arm means), `"survival_ratio"`, `"mann_whitney"`,
 #'   `"quantile_diff"`, or `"quantile_ratio"`. No user-supplied functional is
@@ -79,6 +127,11 @@ sbw_estimate = function(object, outcome, estimand, ...) {
   UseMethod("sbw_estimate")
 }
 
+#' @param data Optional data frame holding the outcome, for when the weights
+#'   were fit on baseline data before outcomes were available. Its rows must
+#'   correspond one-to-one, in the same order, to the data passed to
+#'   [sbw_weights()]; any column the two share is checked for agreement.
+#'   Defaults to the data the weights were fit on.
 #' @param probs Vector of probabilities in (0, 1), used when `estimand` is
 #'   `"quantile_diff"` or `"quantile_ratio"`. Default `0.5` (the median).
 #' @param horizon Time `t0` at which to evaluate the survival ratio; required
@@ -95,12 +148,15 @@ sbw_estimate = function(object, outcome, estimand, ...) {
 #'   region = sample(c("N", "S"), n, replace = TRUE),
 #'   arm = rbinom(n, 1, 0.5)
 #' )
-#' trial_baseline$Y = rbinom(n, 1, plogis(-1 + 0.02 * trial_baseline$age))
+#' # Design stage: fit weights before any outcomes exist.
 #' sbw = sbw_weights(~ age + region, data = trial_baseline, treatment = arm)
-#' sbw_estimate(sbw, Y ~ 1, estimand = "RR", B = 200, seed = 1)
+#'
+#' # Analysis stage: outcomes arrive later, one row per participant, same order.
+#' trial_outcomes = data.frame(Y = rbinom(n, 1, plogis(-1 + 0.02 * trial_baseline$age)))
+#' sbw_estimate(sbw, Y ~ 1, estimand = "RR", data = trial_outcomes, B = 200, seed = 1)
 #' @rdname sbw_estimate
 #' @export
-sbw_estimate.sbw_fit = function(object, outcome, estimand,
+sbw_estimate.sbw_fit = function(object, outcome, estimand, data = NULL,
                                  probs = 0.5, horizon = NULL,
                                  B = 1500, alpha = 0.05,
                                  ci_method = c("wald", "percentile"),
@@ -108,15 +164,13 @@ sbw_estimate.sbw_fit = function(object, outcome, estimand,
   estimand = match.arg(estimand, c("ATE", "RR", "survival_ratio",
                                     "mann_whitney", "quantile_diff", "quantile_ratio"))
   ci_method = match.arg(ci_method)
-  data = object$data
   A = object$treatment
+  resp = .resolve_outcome(outcome, data, object)
 
   if (estimand == "survival_ratio") {
     if (is.null(horizon)) {
       stop("`horizon` (time t0) is required for estimand = \"survival_ratio\".")
     }
-    mf = stats::model.frame(outcome, data = data)
-    resp = stats::model.response(mf)
     if (!inherits(resp, "Surv")) {
       stop("`outcome` must be a Surv(time, status) formula for estimand = \"survival_ratio\".")
     }
@@ -139,9 +193,7 @@ sbw_estimate.sbw_fit = function(object, outcome, estimand,
     ))
   }
 
-  mf = stats::model.frame(outcome, data = data, na.action = stats::na.pass)
-  Y = stats::model.response(mf)
-  if (anyNA(Y)) stop("Missing values in the outcome are not supported.")
+  Y = resp
 
   point_fun = switch(estimand,
     ATE = function(w, A, Y) {
@@ -170,14 +222,11 @@ sbw_estimate.sbw_fit = function(object, outcome, estimand,
   boot_reps = matrix(NA_real_, nrow = B, ncol = length(est))
   for (b in seq_len(B)) {
     idx = sample.int(n, n, replace = TRUE)
-    data_b = data[idx, , drop = FALSE]
     rep_est = tryCatch({
-      X_b = .build_design(object$balance, data_b)
-      A_b = .apply_treatment_levels(data_b[[object$treatment_name]], object$treatment_levels)
+      X_b = .build_design(object$balance, object$data[idx, , drop = FALSE])
+      A_b = A[idx]
       w_b = get_sbws_for_study(X_b, A_b)$w
-      mf_b = stats::model.frame(outcome, data = data_b, na.action = stats::na.pass)
-      Y_b = stats::model.response(mf_b)
-      point_fun(w_b, A_b, Y_b)
+      point_fun(w_b, A_b, Y[idx])
     }, error = function(e) rep(NA_real_, length(est)))
     boot_reps[b, ] = rep_est
   }

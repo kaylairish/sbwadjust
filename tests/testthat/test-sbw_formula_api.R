@@ -154,6 +154,67 @@ test_that("sbw_estimate quantile_diff/quantile_ratio match direct .weighted_quan
                tolerance = 1e-8)
 })
 
+test_that("sbw_estimate works when treatment was passed as a vector, not a column", {
+  df = make_toy_trial()
+  arm_vec = df$arm
+  df$arm = NULL
+  df$Y = with(df, 0.02 * age + 0.5 * arm_vec + rnorm(nrow(df), sd = 0.5))
+  sbw = sbw_weights(~ age + bmi, data = df, treatment = arm_vec)
+
+  res = sbw_estimate(sbw, Y ~ 1, estimand = "ATE", B = 50, seed = 2)
+  expect_equal(res$boot_fail_rate, 0)
+})
+
+test_that("sbw_estimate takes outcomes from a later `data` and matches the all-in-one fit", {
+  df = make_toy_trial()
+  Y = with(df, 0.02 * age + 0.5 * arm + rnorm(nrow(df), sd = 0.5))
+
+  sbw_design = sbw_weights(~ age + bmi, data = df, treatment = arm)
+  res_later = sbw_estimate(sbw_design, Y ~ 1, estimand = "ATE",
+                           data = data.frame(Y = Y), B = 50, seed = 4)
+
+  df_all = df
+  df_all$Y = Y
+  sbw_all = sbw_weights(~ age + bmi, data = df_all, treatment = arm)
+  res_all = sbw_estimate(sbw_all, Y ~ 1, estimand = "ATE", B = 50, seed = 4)
+
+  expect_equal(res_later$estimate, res_all$estimate, tolerance = 1e-10)
+  expect_equal(res_later$ci, res_all$ci, tolerance = 1e-10)
+
+  # full data frame with outcome added also works (shared columns agree)
+  res_full = sbw_estimate(sbw_design, Y ~ 1, estimand = "ATE", data = df_all, B = 50, seed = 4)
+  expect_equal(res_full$estimate, res_all$estimate, tolerance = 1e-10)
+})
+
+test_that("sbw_estimate rejects outcome data that doesn't line up with the fit", {
+  df = make_toy_trial()
+  sbw = sbw_weights(~ age + bmi, data = df, treatment = arm)
+  df$Y = rnorm(nrow(df))
+
+  expect_error(sbw_estimate(sbw, Y ~ 1, "ATE", data = df[-1, ], B = 10), "rows")
+  expect_error(sbw_estimate(sbw, Y ~ 1, "ATE", data = df[nrow(df):1, ], B = 10), "differs")
+
+  df_na = df
+  df_na$Y[1] = NA
+  expect_error(sbw_estimate(sbw, Y ~ 1, "ATE", data = df_na, B = 10), "Missing values")
+})
+
+test_that("survival_ratio resolves Surv() without survival attached, and rejects NA times", {
+  df = make_toy_trial()
+  sbw = sbw_weights(~ age + bmi, data = df, treatment = arm)
+  df$time = rexp(nrow(df), rate = 0.05)
+  df$status = rbinom(nrow(df), 1, 0.8)
+
+  # formula environment can't see survival::Surv, as for a user who never attached it
+  f = local(Surv(time, status) ~ 1, envir = new.env(parent = baseenv()))
+  res = sbw_estimate(sbw, f, estimand = "survival_ratio", data = df, horizon = 10, B = 20, seed = 1)
+  expect_s3_class(res, "sbw_estimate")
+
+  df$time[2] = NA
+  expect_error(sbw_estimate(sbw, f, "survival_ratio", data = df, horizon = 10, B = 20),
+               "Missing values")
+})
+
 test_that(".weighted_win_prob matches an independent brute-force double loop, with ties", {
   set.seed(42)
   y1 = rnorm(15); w1 = runif(15, 0.5, 2)

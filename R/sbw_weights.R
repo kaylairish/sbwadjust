@@ -47,21 +47,6 @@
   list(A = as.integer(levels_map[as.character(f)]), levels = levels_map)
 }
 
-#' Apply an already-fit treatment level map to a (possibly resampled) vector
-#'
-#' Used to recode treatment consistently across bootstrap resamples, rather
-#' than re-deriving a possibly different level order from each resample.
-#'
-#' @param raw Raw treatment vector, same type as originally passed to
-#'   [sbw_weights()].
-#' @param levels_map The `levels` element from [.recode_treatment()].
-#' @return Integer 0/1 vector.
-#' @keywords internal
-.apply_treatment_levels = function(raw, levels_map) {
-  if (is.logical(raw) || is.numeric(raw)) return(as.integer(raw))
-  as.integer(levels_map[as.character(raw)])
-}
-
 #' Resolve the `treatment` argument (bare column name or vector) against `data`
 #'
 #' @param treatment_expr The unevaluated `treatment` argument, from

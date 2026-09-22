@@ -16,9 +16,10 @@ sbw <- sbw_weights(
 )
 summary(sbw)          # balance table + effective-sample-size diagnostics
 
-## 2. Analysis stage -- after unblinding.
-sbw_estimate(sbw, Y ~ 1, estimand = "RR")                             # relative risk
-sbw_estimate(sbw, Surv(time, status) ~ 1,
+## 2. Analysis stage -- after unblinding. `trial_outcomes` has one row per
+##    participant, in the same order as `trial_baseline`.
+sbw_estimate(sbw, Y ~ 1, estimand = "RR", data = trial_outcomes)      # relative risk
+sbw_estimate(sbw, Surv(time, status) ~ 1, data = trial_outcomes,
              estimand = "survival_ratio", horizon = 52)
 
 ## An estimand we don't cover? Take the weights, use your own estimator.

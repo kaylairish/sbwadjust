@@ -15,6 +15,19 @@
   generalized-inverse (step-function / type 1) SBW-weighted empirical
   quantile, matching the empirical-process framework the paper's
   differentiability results use.
+* `sbw_estimate()` gains a `data` argument, so weights can be fit on
+  baseline data before outcomes exist and outcomes supplied at analysis
+  time. Rows must line up one-to-one with the fitted data; row count and any
+  shared columns are checked.
+* Fixed: `sbw_estimate()`'s bootstrap failed on every resample when
+  `sbw_weights()` was given `treatment` as a vector rather than a column
+  name. The bootstrap now resamples the stored 0/1 treatment directly.
+* `Surv()` in a `survival_ratio` outcome formula now resolves without
+  attaching the survival package, and missing survival times are rejected
+  instead of silently dropped.
+* `?sbw_estimate` now notes that the row bootstrap assumes simple
+  randomization and does not account for stratified or covariate-adaptive
+  designs.
 * CRAN Repository Policy compliance pass: fixed a roxygen markdown escaping
   bug (`\%in\%` rendering with stray backslashes in `?sbw_estimate`), added a
   runnable `@examples` block to `sbw_estimate()`, fixed the `DESCRIPTION`
