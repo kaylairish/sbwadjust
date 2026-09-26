@@ -1,5 +1,7 @@
 arXiv
+CMD
 differentiability
+doi
 Estimand
 estimand
 Estimands
@@ -9,6 +11,7 @@ IPTW
 IPW
 Kaplan
 Luedtke
+miscalibrated
 nonneg
 nonnegativity
 QP

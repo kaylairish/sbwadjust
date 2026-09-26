@@ -1,5 +1,9 @@
 # sbwadjust
 
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/kaylairish/sbwadjust/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/kaylairish/sbwadjust/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
 Covariate adjustment for randomized trials using stable balancing weights
 (SBW), from *"Simple Covariate Adjustment for Many Estimands Using Stable
 Balancing Weights"* (Irish, Zubizarreta, Luedtke;

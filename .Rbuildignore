@@ -3,3 +3,7 @@
 ^\.git$
 ^cran-comments\.md$
 ^CRAN-SUBMISSION$
+^\.github$
+^sbwadjust\.Rcheck$
+^\.DS_Store$
+^.*\.tar\.gz$
