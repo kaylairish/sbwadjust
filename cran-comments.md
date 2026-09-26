@@ -6,7 +6,9 @@ First CRAN submission of sbwadjust (0.2.0).
 
 * local macOS (R release): R CMD check --as-cran
 * win-builder (devel): R Under development (unstable) (2026-09-21 r90579 ucrt)
-* R-hub (linux, windows): TODO
+* R-hub (R-devel): linux, windows, macos, macos-arm64 -- all OK
+* GitHub Actions: macOS, Windows (R release); Ubuntu (R devel, release,
+  oldrel-1) -- all OK
 
 ## R CMD check results
 
