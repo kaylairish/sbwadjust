@@ -111,6 +111,10 @@
 #'   (permuted blocks, minimization, biased coin); under those designs the
 #'   confidence intervals may be miscalibrated.
 #'
+#'   For `estimand = "survival_ratio"`, if the SBW point estimate or its
+#'   bootstrap standard error is non-finite, the unadjusted Kaplan-Meier
+#'   ratio is returned instead, with a warning and `mc_fail = TRUE`.
+#'
 #' @param object An `sbw_fit` from [sbw_weights()].
 #' @param outcome A one-sided-response formula naming the outcome, e.g.
 #'   `Y ~ 1` (or `Surv(time, status) ~ 1` for `estimand = "survival_ratio"`;
@@ -180,6 +184,11 @@ sbw_estimate.sbw_fit = function(object, outcome, estimand, data = NULL,
     res = boot_km_ratio(time, status, A, object$X, t0 = horizon,
                          B = B, alpha = alpha, weight_type = "SBW",
                          ci_method = ci_method, seed = seed)
+    if (isTRUE(res$MC_fail)) {
+      warning("SBW survival ratio could not be computed (non-finite point ",
+              "estimate or bootstrap SE); returning the unadjusted Kaplan-Meier ",
+              "ratio instead. See `mc_fail` in the result.", call. = FALSE)
+    }
 
     return(structure(
       list(

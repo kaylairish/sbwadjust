@@ -15,6 +15,9 @@
   generalized-inverse (step-function / type 1) SBW-weighted empirical
   quantile, matching the empirical-process framework the paper's
   differentiability results use.
+* `sbw_estimate(estimand = "survival_ratio")` now warns when the SBW point
+  estimate or bootstrap SE is non-finite and the unadjusted Kaplan-Meier
+  ratio is returned in its place (previously flagged only by `mc_fail`).
 * `sbw_estimate()` gains a `data` argument, so weights can be fit on
   baseline data before outcomes exist and outcomes supplied at analysis
   time. Rows must line up one-to-one with the fitted data; row count and any

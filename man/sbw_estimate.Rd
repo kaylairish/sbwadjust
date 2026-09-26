@@ -68,6 +68,10 @@ nonparametric row bootstrap), which is valid under simple randomization.
 It does not account for stratified or covariate-adaptive randomization
 (permuted blocks, minimization, biased coin); under those designs the
 confidence intervals may be miscalibrated.
+
+For \code{estimand = "survival_ratio"}, if the SBW point estimate or its
+bootstrap standard error is non-finite, the unadjusted Kaplan-Meier
+ratio is returned instead, with a warning and \code{mc_fail = TRUE}.
 }
 \examples{
 set.seed(1)

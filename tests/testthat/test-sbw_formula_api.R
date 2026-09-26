@@ -113,6 +113,29 @@ test_that("sbw_estimate survival_ratio matches boot_km_ratio() called directly",
   expect_equal(as.numeric(res$ci), direct$ci, tolerance = 1e-8)
 })
 
+test_that("survival_ratio warns when it falls back to the unadjusted KM ratio", {
+  df = make_toy_trial()
+  df$time = rexp(nrow(df), rate = 0.05 + 0.01 * df$arm)
+  df$status = rbinom(nrow(df), 1, 0.8)
+  sbw = sbw_weights(~ age + bmi, data = df, treatment = arm)
+
+  # B = 1: the SD of a single bootstrap replicate is NA, so the SE is non-finite
+  expect_warning(
+    res <- sbw_estimate(sbw, survival::Surv(time, status) ~ 1,
+                        estimand = "survival_ratio", horizon = 10, B = 1, seed = 7),
+    "unadjusted Kaplan-Meier"
+  )
+  unadj = km_ratio_loglog_greenwood(df$time, df$status, df$arm, t0 = 10)
+  expect_true(res$mc_fail)
+  expect_equal(unname(res$estimate), unadj$ratio, tolerance = 1e-8)
+
+  # the ordinary path stays silent
+  expect_no_warning(
+    sbw_estimate(sbw, survival::Surv(time, status) ~ 1,
+                 estimand = "survival_ratio", horizon = 10, B = 50, seed = 7)
+  )
+})
+
 test_that("sbw_estimate mann_whitney matches the brute-force weighted win probability", {
   df = make_toy_trial()
   df$Y = rnorm(nrow(df), mean = df$age / 10 + df$arm)
