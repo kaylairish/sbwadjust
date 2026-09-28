@@ -11,14 +11,16 @@ km_ratio_loglog_greenwood(time, status, A, t0, alpha = 0.05, weights = NULL)
 
 \item{status}{Event indicator (1 = event, 0 = censored).}
 
-\item{A}{Treatment indicator (0/1).}
+\item{A}{Treatment indicator (0/1; numeric, logical, character, or factor).}
 
 \item{t0}{Time at which to evaluate the survival ratio.}
 
 \item{alpha}{Significance level for the confidence interval (default 0.05).}
 
 \item{weights}{Optional case weights (e.g. SBW), passed to
-\code{survival::survfit()}.}
+\code{survival::survfit()}. The weights are treated as fixed and known, so
+with estimated weights such as SBW, \code{se_log} and the CI ignore the
+uncertainty from estimating them; use \code{\link[=boot_km_ratio]{boot_km_ratio()}} for inference.}
 }
 \value{
 A list with \code{S0}, \code{S1}, \code{ratio} (= S1(t0)/S0(t0)), \code{log_ratio},

@@ -43,15 +43,19 @@
 #'
 #' @param time Event/censoring time.
 #' @param status Event indicator (1 = event, 0 = censored).
-#' @param A Treatment indicator (0/1).
+#' @param A Treatment indicator (0/1; numeric, logical, character, or factor).
 #' @param t0 Time at which to evaluate the survival ratio.
 #' @param alpha Significance level for the confidence interval (default 0.05).
 #' @param weights Optional case weights (e.g. SBW), passed to
-#'   `survival::survfit()`.
+#'   `survival::survfit()`. The weights are treated as fixed and known, so
+#'   with estimated weights such as SBW, `se_log` and the CI ignore the
+#'   uncertainty from estimating them; use [boot_km_ratio()] for inference.
 #' @return A list with `S0`, `S1`, `ratio` (= S1(t0)/S0(t0)), `log_ratio`,
 #'   `se_log`, `ci_ratio`, and `ci_log`.
 #' @export
 km_ratio_loglog_greenwood = function(time, status, A, t0, alpha = 0.05, weights = NULL) {
+  # as.integer() on a factor returns its level codes (1, 2), not its 0/1 labels
+  if (is.factor(A)) A = as.character(A)
   df = data.frame(time = time, status = status, A = as.integer(A))
 
   fit = survival::survfit(survival::Surv(time, status) ~ A, data = df, weights = weights)

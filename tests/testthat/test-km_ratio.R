@@ -120,3 +120,16 @@ test_that("boot_km_ratio errors (rather than returning a nonsense finite estimat
     "Unadjusted KM ratio failed"
   )
 })
+
+test_that("km_ratio_loglog_greenwood gives the same answer for numeric, logical, character, and factor A", {
+  set.seed(3)
+  n <- 60
+  A <- rep(c(0, 1), each = n / 2)
+  time <- rexp(n, 0.2)
+  status <- rbinom(n, 1, 0.8)
+
+  ref <- km_ratio_loglog_greenwood(time, status, A, t0 = 3)
+  for (A_alt in list(A == 1, as.character(A), factor(A))) {
+    expect_equal(km_ratio_loglog_greenwood(time, status, A_alt, t0 = 3), ref)
+  }
+})
