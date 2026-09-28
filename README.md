@@ -58,7 +58,7 @@ remotes::install_github("kaylairish/sbwadjust")
 | `R/sbw_weights.R` | `sbw_weights` — formula/data/treatment front end to `get_sbws_for_study`, returning an `sbw_fit` object with `print`, `summary`, `plot`, and `weights` methods. |
 | `R/sbw_estimate.R` | `sbw_estimate` — treatment-effect estimation from an `sbw_fit`: ATE, RR, survival ratio, Mann-Whitney, and quantile contrasts, each with a bootstrap CI. |
 | `R/weights.R` | `get_weights_for_group_neg`, `get_weights_for_group_nonneg`, `get_sbws_for_study` — fit SBW for one arm or a full two-arm study: a closed-form solve first, falling back to a nonnegative quadratic program when the closed-form weights go negative. |
-| `R/km_ratio.R` | `km_ratio_loglog_greenwood`, `boot_km_ratio` — weighted Kaplan–Meier survival-ratio point estimates and bootstrap CIs (Wald or percentile); `sbw_estimate(..., estimand = "survival_ratio")` wraps `boot_km_ratio`. |
+| `R/km_ratio.R` | `km_ratio_greenwood`, `boot_km_ratio` — weighted Kaplan–Meier survival-ratio point estimates and bootstrap CIs (Wald or percentile); `sbw_estimate(..., estimand = "survival_ratio")` wraps `boot_km_ratio`. |
 
 > **Estimand coverage note.** ATE, RR, and survival ratio have full worked
 > estimators and simulations in the paper. `mann_whitney` implements only the

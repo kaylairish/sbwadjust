@@ -47,7 +47,7 @@ A list with \code{MC_fail}, \code{log_est}, \code{est}, \code{se_log}, \code{ci_
 \code{sbw_max_abs_clipped_boot_max}).
 }
 \description{
-Bootstraps the standard error of \code{\link[=km_ratio_loglog_greenwood]{km_ratio_loglog_greenwood()}}'s
+Bootstraps the standard error of \code{\link[=km_ratio_greenwood]{km_ratio_greenwood()}}'s
 log-ratio, then builds either a Wald CI (log scale) or a percentile CI
 (log scale). If the point estimate or bootstrap SE come out non-finite,
 falls back to the unadjusted KM ratio and sets \code{MC_fail = TRUE}; if even

@@ -19,14 +19,14 @@ test_that(".extract_surv_at_t0 matches pinned survfit summary values", {
   expect_equal(out$se1, 0.151494017432321, tolerance = 1e-8)
 })
 
-test_that("km_ratio_loglog_greenwood matches pinned unweighted output", {
+test_that("km_ratio_greenwood matches pinned unweighted output", {
   set.seed(123)
   n <- 40
   A <- rep(c(0, 1), each = n / 2)
   time <- rexp(n, rate = ifelse(A == 1, 0.08, 0.12))
   status <- rbinom(n, 1, 0.85)
 
-  res <- km_ratio_loglog_greenwood(time, status, A, t0 = 5)
+  res <- km_ratio_greenwood(time, status, A, t0 = 5)
 
   expect_equal(res$S0, 0.373333333333333, tolerance = 1e-8)
   expect_equal(res$S1, 0.9, tolerance = 1e-8)
@@ -37,7 +37,7 @@ test_that("km_ratio_loglog_greenwood matches pinned unweighted output", {
   expect_equal(res$ci_log, c(0.278223619558084, 1.48162255584848), tolerance = 1e-8)
 })
 
-test_that("km_ratio_loglog_greenwood matches pinned SBW-weighted output", {
+test_that("km_ratio_greenwood matches pinned SBW-weighted output", {
   set.seed(123)
   n <- 40
   A <- rep(c(0, 1), each = n / 2)
@@ -46,7 +46,7 @@ test_that("km_ratio_loglog_greenwood matches pinned SBW-weighted output", {
   X_subset <- data.frame(x1 = rnorm(n))
   w <- get_sbws_for_study(X_subset, A)$w
 
-  res <- km_ratio_loglog_greenwood(time, status, A, t0 = 5, weights = w)
+  res <- km_ratio_greenwood(time, status, A, t0 = 5, weights = w)
 
   expect_equal(res$S0, 0.35943176127448, tolerance = 1e-8)
   expect_equal(res$S1, 0.886500789461794, tolerance = 1e-8)
@@ -121,15 +121,15 @@ test_that("boot_km_ratio errors (rather than returning a nonsense finite estimat
   )
 })
 
-test_that("km_ratio_loglog_greenwood gives the same answer for numeric, logical, character, and factor A", {
+test_that("km_ratio_greenwood gives the same answer for numeric, logical, character, and factor A", {
   set.seed(3)
   n <- 60
   A <- rep(c(0, 1), each = n / 2)
   time <- rexp(n, 0.2)
   status <- rbinom(n, 1, 0.8)
 
-  ref <- km_ratio_loglog_greenwood(time, status, A, t0 = 3)
+  ref <- km_ratio_greenwood(time, status, A, t0 = 3)
   for (A_alt in list(A == 1, as.character(A), factor(A))) {
-    expect_equal(km_ratio_loglog_greenwood(time, status, A_alt, t0 = 3), ref)
+    expect_equal(km_ratio_greenwood(time, status, A_alt, t0 = 3), ref)
   }
 })

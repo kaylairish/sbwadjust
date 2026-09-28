@@ -1,13 +1,13 @@
-# KM-ratio estimator: S1(t0)/S0(t0) from (weighted) KM + log-log Greenwood
-# CI, plus its bootstrap wrapper.
+# KM-ratio estimator: S1(t0)/S0(t0) from (weighted) KM with a Greenwood-based
+# Wald CI on the log scale, plus its bootstrap wrapper.
 #
-# - km_ratio_loglog_greenwood: Wald CI for log{S1(t0)/S0(t0)}. Each arm's
-#   Greenwood SE is carried to log(-log S) and back to log S by the delta
-#   method (the two steps cancel, so se(log S) = se(S) / S). The first step
-#   divides by S * log(S), so if either arm's KM estimate at t0 is exactly 0
-#   or 1 (e.g. no events in that arm by t0), se_log and the CI are NaN. S is
-#   not nudged into [eps, 1 - eps] for some small eps to avoid this, since
-#   the resulting CI would depend on that arbitrary choice of eps.
+# - km_ratio_greenwood: Wald CI for log{S1(t0)/S0(t0)}, with each arm's
+#   se(log S) = se(S) / S by the delta method, se(S) from Greenwood's formula.
+#   If an arm's KM estimate at t0 is 0 (everyone has had the event), log S is
+#   -Inf and the ratio, SE, and CI are not finite. S is not nudged into
+#   [eps, 1 - eps] for some small eps to avoid this, since the result would
+#   depend on that arbitrary choice of eps. An arm with S = 1 (no events by
+#   t0) has Greenwood SE 0 and so contributes nothing to se_log.
 # - boot_km_ratio: refits SBW weights on each bootstrap resample; falls back
 #   to the unadjusted KM ratio (MC_fail = TRUE) if the full-sample fit fails;
 #   reports SBW clipping diagnostics; ci_method selects a Wald or percentile
@@ -39,7 +39,10 @@
   list(S0 = S[i0], S1 = S[i1], se0 = seS[i0], se1 = seS[i1])
 }
 
-#' Weighted KM survival-ratio S1(t0)/S0(t0) with a log-log Greenwood CI
+#' Weighted KM survival ratio S1(t0)/S0(t0) with a Greenwood-based CI
+#'
+#' Wald CI on the log scale, with `se(log S) = se(S) / S` for each arm and
+#' `se(S)` from Greenwood's formula.
 #'
 #' @param time Event/censoring time.
 #' @param status Event indicator (1 = event, 0 = censored).
@@ -53,7 +56,7 @@
 #' @return A list with `S0`, `S1`, `ratio` (= S1(t0)/S0(t0)), `log_ratio`,
 #'   `se_log`, `ci_ratio`, and `ci_log`.
 #' @export
-km_ratio_loglog_greenwood = function(time, status, A, t0, alpha = 0.05, weights = NULL) {
+km_ratio_greenwood = function(time, status, A, t0, alpha = 0.05, weights = NULL) {
   # as.integer() on a factor returns its level codes (1, 2), not its 0/1 labels
   if (is.factor(A)) A = as.character(A)
   df = data.frame(time = time, status = status, A = as.integer(A))
@@ -66,13 +69,9 @@ km_ratio_loglog_greenwood = function(time, status, A, t0, alpha = 0.05, weights 
   se0 = out$se0
   se1 = out$se1
 
-  # log-log Greenwood delta
-  gprime = function(S) 1 / (S * log(S))
-  var_g0 = (gprime(S0) * se0)^2
-  var_g1 = (gprime(S1) * se1)^2
-
-  var_logS0 = (log(S0))^2 * var_g0
-  var_logS1 = (log(S1))^2 * var_g1
+  # delta method: se(log S) = se(S) / S
+  var_logS0 = (se0 / S0)^2
+  var_logS1 = (se1 / S1)^2
 
   logRR = log(S1) - log(S0)
   se_logRR = sqrt(var_logS0 + var_logS1)
@@ -92,7 +91,7 @@ km_ratio_loglog_greenwood = function(time, status, A, t0, alpha = 0.05, weights 
 
 #' Bootstrap CI for an SBW-weighted KM survival ratio
 #'
-#' Bootstraps the standard error of [km_ratio_loglog_greenwood()]'s
+#' Bootstraps the standard error of [km_ratio_greenwood()]'s
 #' log-ratio, then builds either a Wald CI (log scale) or a percentile CI
 #' (log scale). If the point estimate or bootstrap SE come out non-finite,
 #' falls back to the unadjusted KM ratio and sets `MC_fail = TRUE`; if even
@@ -139,7 +138,7 @@ boot_km_ratio = function(time, status, A, X_subset, t0,
     nclip_full = sbw_full$n_clipped
     maxclip_full = sbw_full$max_abs_clipped
 
-    full = km_ratio_loglog_greenwood(time, status, A, t0 = t0, alpha = alpha, weights = w_full)
+    full = km_ratio_greenwood(time, status, A, t0 = t0, alpha = alpha, weights = w_full)
 
     list(
       finite_rep = is.finite(full$log_ratio),
@@ -158,7 +157,7 @@ boot_km_ratio = function(time, status, A, X_subset, t0,
 
     # unadjusted
     unadj = tryCatch(
-      km_ratio_loglog_greenwood(time, status, A, t0 = t0, alpha = alpha, weights = NULL),
+      km_ratio_greenwood(time, status, A, t0 = t0, alpha = alpha, weights = NULL),
       error = function(e) NULL
     )
     if (is.null(unadj) || !is.finite(unadj$log_ratio)) {
@@ -206,14 +205,14 @@ boot_km_ratio = function(time, status, A, X_subset, t0,
       nclip_boot[b] = sbw_boot$n_clipped
       maxclip_boot[b] = sbw_boot$max_abs_clipped
 
-      km_ratio_loglog_greenwood(time_boot, status_boot, A_boot, t0 = t0, alpha = alpha, weights = w_boot)$log_ratio
+      km_ratio_greenwood(time_boot, status_boot, A_boot, t0 = t0, alpha = alpha, weights = w_boot)$log_ratio
     }, error = function(e) NA_real_)
 
     if (!is.finite(bootstrap_point_est)) {
       fail[b] = TRUE
       # use unadjusted for that bootstrap draw
       bootstrap_point_est = tryCatch(
-        km_ratio_loglog_greenwood(time_boot, status_boot, A_boot, t0 = t0, alpha = alpha, weights = NULL)$log_ratio,
+        km_ratio_greenwood(time_boot, status_boot, A_boot, t0 = t0, alpha = alpha, weights = NULL)$log_ratio,
         error = function(e) NA_real_
       )
     }
@@ -229,7 +228,7 @@ boot_km_ratio = function(time, status, A, X_subset, t0,
   if (!is.finite(se_boot) || se_boot <= 0) {
     # unadjusted
     unadj = tryCatch(
-      km_ratio_loglog_greenwood(time, status, A, t0 = t0, alpha = alpha, weights = NULL),
+      km_ratio_greenwood(time, status, A, t0 = t0, alpha = alpha, weights = NULL),
       error = function(e) NULL
     )
     if (is.null(unadj) || !is.finite(unadj$log_ratio)) {

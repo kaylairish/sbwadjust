@@ -5,6 +5,14 @@
   package is scoped to SBW; inverse-probability weighting was only a
   comparison method for the paper's simulations. Code that needs it can
   install v0.2.0 (`remotes::install_github("kaylairish/sbwadjust@v0.2.0")`).
+* Renamed `km_ratio_loglog_greenwood()` to `km_ratio_greenwood()`. Its CI
+  was always a Wald CI on the log scale; the old name described an
+  intermediate log-log step that cancels out. That step is gone:
+  `se(log S)` is now computed directly as `se(S) / S`, which gives identical
+  results except that an arm with no events by `t0` (S = 1) now contributes
+  zero to `se_log` instead of making it `NaN`.
+* `km_ratio_greenwood()` now accepts a factor treatment indicator, and its
+  help page notes that the SE treats the weights as fixed.
 
 # sbwadjust 0.2.0
 

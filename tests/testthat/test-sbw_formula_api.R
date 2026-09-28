@@ -125,7 +125,7 @@ test_that("survival_ratio warns when it falls back to the unadjusted KM ratio", 
                         estimand = "survival_ratio", horizon = 10, B = 1, seed = 7),
     "unadjusted Kaplan-Meier"
   )
-  unadj = km_ratio_loglog_greenwood(df$time, df$status, df$arm, t0 = 10)
+  unadj = km_ratio_greenwood(df$time, df$status, df$arm, t0 = 10)
   expect_true(res$mc_fail)
   expect_equal(unname(res$estimate), unadj$ratio, tolerance = 1e-8)
 
