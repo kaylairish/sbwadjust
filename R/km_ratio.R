@@ -1,18 +1,12 @@
-# Shared KM-ratio estimator: S1(t0)/S0(t0) from (weighted) KM + log-log
-# Greenwood CI, plus its bootstrap wrapper.
+# KM-ratio estimator: S1(t0)/S0(t0) from (weighted) KM + log-log Greenwood
+# CI, plus its bootstrap wrapper.
 #
-# Canonical picks (2026-07-22, CODE_PACKAGE_PLAN.md Step 2, confirmed with the author):
 # - km_ratio_loglog_greenwood: no eps-clamping of S0/S1 before the log-log
-#   transform. R's own `survival` package treats S=0/1 as genuinely undefined
-#   for the log-log CI (returns NA there) rather than picking an arbitrary
-#   epsilon, and this codebase's own saved results (checked across all
-#   ~1M rows in survival-risk-ratio/results-power + results-t1e) never
-#   actually hit that boundary, so dropping the clamp changes nothing already
-#   reported.
-# - boot_km_ratio: survival-risk-ratio's fuller version (IPW option, hard-fail-
-#   to-unadjusted fallback with MC_fail, SBW clipping diagnostics), with an
-#   added ci_method switch so illustration-of-approach/table_1.R keeps its
-#   percentile CI instead of switching to Wald.
+#   transform. As in the `survival` package, the log-log CI is undefined at
+#   S = 0 or 1 and returns NA there rather than using an arbitrary epsilon.
+# - boot_km_ratio: SBW or IPW weights; falls back to the unadjusted KM ratio
+#   (MC_fail = TRUE) if the full-sample fit fails; reports SBW clipping
+#   diagnostics; ci_method selects a Wald or percentile CI.
 
 #' Extract survival + SE at a fixed time from a `survfit` object, by arm
 #'

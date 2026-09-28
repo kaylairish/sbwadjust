@@ -1,13 +1,7 @@
-# Shared stable-balancing-weight (SBW) solver used by the binary-ATE,
-# survival-risk-ratio, coherence, and illustration-of-approach (Table 1)
-# simulations. Consolidated 2026-07-20 (CODE_PACKAGE_PLAN.md Step 1) from
-# four near-duplicate copies; see that file's "Step 0 findings" for the
-# audit this is based on.
+# Stable balancing weight (SBW) solver.
 #
 # Return contract: get_weights_for_group_nonneg / get_sbws_for_study both
-# return a list (`w`, `n_clipped`, `max_abs_clipped`), not a plain vector —
-# this matches what survival-risk-ratio and table_1.R already did; binary-ate
-# and coherence's call sites were updated to unwrap `$w`.
+# return a list (`w`, `n_clipped`, `max_abs_clipped`), not a plain vector.
 #
 # Tolerance: get_sbws_for_study accepts the closed-form solve as long as it's
 # nonnegative within 1e-10 (zeroing out negligible negative floating-point

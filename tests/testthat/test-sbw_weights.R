@@ -1,4 +1,4 @@
-# Regression tests for sbw_weights.R (CODE_PACKAGE_PLAN.md Step 3).
+# Regression tests for sbw_weights.R.
 # Each test pins current behavior on a fixed toy input against hardcoded
 # expected values captured from the current code, not derived independently.
 

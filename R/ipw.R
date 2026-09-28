@@ -1,11 +1,4 @@
-# Stabilized IPTW weights, moved into the package alongside boot_km_ratio()
-# (CODE_PACKAGE_PLAN.md Step 4): boot_km_ratio()'s weight_type = "IPW" path
-# calls this function directly, so once boot_km_ratio() lives in the package
-# namespace it can no longer resolve a copy left behind in
-# survival-risk-ratio/simulation_functions_survival.R (package functions
-# don't search the caller's global environment). Previously only used by
-# survival-risk-ratio; not part of Step 0's duplicate audit since it wasn't
-# duplicated anywhere, just a dependency that has to move with its caller.
+# Stabilized IPTW weights; used by boot_km_ratio()'s weight_type = "IPW" path.
 
 #' Stabilized inverse-probability-of-treatment weights for KM estimation
 #'

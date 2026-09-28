@@ -1,21 +1,12 @@
 # User-facing analysis-stage API: sbw_estimate() dispatches to one of a
-# closed menu of estimands (design note's "no user-supplied functional"
-# principle -- an uncovered estimand means take weights(sbw) and run your
-# own estimator). ATE/RR/mann_whitney/quantile_diff/quantile_ratio share one
-# bootstrap engine here (resample rows, refit SBW weights, recompute the
-# point estimate); survival_ratio instead calls the already-tested
-# boot_km_ratio() from km_ratio.R rather than duplicating it.
+# closed menu of estimands (no user-supplied functional -- for an uncovered
+# estimand, take weights(sbw) and run your own estimator).
+# ATE/RR/mann_whitney/quantile_diff/quantile_ratio share one bootstrap engine
+# here (resample rows, refit SBW weights, recompute the point estimate);
+# survival_ratio instead calls boot_km_ratio() from km_ratio.R.
 #
-# Estimand coverage note (per manuscript/main.tex and
-# main_jasa_supplement_body.tex): ATE, RR, and survival_ratio have full
-# worked estimators/simulations in the paper. mann_whitney implements only
-# the finite/uncensored case given in main_jasa_supplement_body.tex (the
-# right-censored case is left to future work, per that section). RMST is
-# intentionally not included in this release. quantile_diff/quantile_ratio
-# (main.tex's "Quantiles and medians" item) use the natural SBW-weighted
-# empirical-quantile plug-in -- the generalized-inverse weighted quantile,
-# arm-specific difference/ratio, bootstrap CI -- which is not spelled out
-# verbatim in the paper as an estimator recipe; flagged for review.
+# mann_whitney covers uncensored outcomes only. quantile_diff/quantile_ratio
+# use the SBW-weighted generalized-inverse empirical quantile in each arm.
 
 #' Weighted mean
 #' @keywords internal

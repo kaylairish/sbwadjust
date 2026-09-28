@@ -1,4 +1,4 @@
-# Regression tests for km_ratio.R (CODE_PACKAGE_PLAN.md Step 3).
+# Regression tests for km_ratio.R.
 # Each test pins current behavior on a fixed-seed toy input against hardcoded
 # expected values captured from the current code, not derived independently.
 
