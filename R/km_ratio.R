@@ -1,9 +1,13 @@
 # KM-ratio estimator: S1(t0)/S0(t0) from (weighted) KM + log-log Greenwood
 # CI, plus its bootstrap wrapper.
 #
-# - km_ratio_loglog_greenwood: no eps-clamping of S0/S1 before the log-log
-#   transform. As in the `survival` package, the log-log CI is undefined at
-#   S = 0 or 1 and returns NA there rather than using an arbitrary epsilon.
+# - km_ratio_loglog_greenwood: Wald CI for log{S1(t0)/S0(t0)}. Each arm's
+#   Greenwood SE is carried to log(-log S) and back to log S by the delta
+#   method (the two steps cancel, so se(log S) = se(S) / S). The first step
+#   divides by S * log(S), so if either arm's KM estimate at t0 is exactly 0
+#   or 1 (e.g. no events in that arm by t0), se_log and the CI are NaN. S is
+#   not nudged into [eps, 1 - eps] for some small eps to avoid this, since
+#   the resulting CI would depend on that arbitrary choice of eps.
 # - boot_km_ratio: SBW or IPW weights; falls back to the unadjusted KM ratio
 #   (MC_fail = TRUE) if the full-sample fit fails; reports SBW clipping
 #   diagnostics; ci_method selects a Wald or percentile CI.

@@ -1,8 +1,6 @@
 # User-facing formula API (design-stage): sbw_weights() wraps
 # get_sbws_for_study() (weights.R) behind a formula/data/treatment interface,
 # with S3 methods (print, summary, plot, weights) on the fitted object.
-# Added for the v0.2 "usable by a stranger" release described in
-# manuscript/sbwadjust_package_design_note.tex.
 
 #' Build the balance design matrix from a one-sided formula
 #'
