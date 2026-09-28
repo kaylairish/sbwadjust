@@ -17,7 +17,7 @@ km_ratio_loglog_greenwood(time, status, A, t0, alpha = 0.05, weights = NULL)
 
 \item{alpha}{Significance level for the confidence interval (default 0.05).}
 
-\item{weights}{Optional case weights (e.g. SBW or IPW), passed to
+\item{weights}{Optional case weights (e.g. SBW), passed to
 \code{survival::survfit()}.}
 }
 \value{

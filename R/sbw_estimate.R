@@ -173,7 +173,7 @@ sbw_estimate.sbw_fit = function(object, outcome, estimand, data = NULL,
     status = resp[, 2]
 
     res = boot_km_ratio(time, status, A, object$X, t0 = horizon,
-                         B = B, alpha = alpha, weight_type = "SBW",
+                         B = B, alpha = alpha,
                          ci_method = ci_method, seed = seed)
     if (isTRUE(res$MC_fail)) {
       warning("SBW survival ratio could not be computed (non-finite point ",

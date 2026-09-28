@@ -1,3 +1,11 @@
+# sbwadjust 0.3.0
+
+* Removed `get_ipws_for_study()` and the `weight_type` / `ipw_use_glm`
+  arguments of `boot_km_ratio()`, which now always uses SBW weights. The
+  package is scoped to SBW; inverse-probability weighting was only a
+  comparison method for the paper's simulations. Code that needs it can
+  install v0.2.0 (`remotes::install_github("kaylairish/sbwadjust@v0.2.0")`).
+
 # sbwadjust 0.2.0
 
 "Usable by a stranger" release: a user-facing formula API on top of the v0.1 core.

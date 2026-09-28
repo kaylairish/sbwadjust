@@ -2,7 +2,7 @@
 % Please edit documentation in R/km_ratio.R
 \name{boot_km_ratio}
 \alias{boot_km_ratio}
-\title{Bootstrap CI for a weighted-KM survival ratio (SBW or IPW)}
+\title{Bootstrap CI for an SBW-weighted KM survival ratio}
 \usage{
 boot_km_ratio(
   time,
@@ -12,9 +12,7 @@ boot_km_ratio(
   t0,
   B = 1500,
   alpha = 0.05,
-  weight_type = c("SBW", "IPW"),
   ci_method = c("wald", "percentile"),
-  ipw_use_glm = TRUE,
   seed = NULL,
   verbose = FALSE
 )
@@ -27,7 +25,7 @@ boot_km_ratio(
 \item{A}{Treatment indicator (0/1).}
 
 \item{X_subset}{Covariate data frame for the full study sample, used to
-fit the SBW/IPW weights.}
+fit the SBW weights.}
 
 \item{t0}{Time at which to evaluate the survival ratio.}
 
@@ -35,13 +33,7 @@ fit the SBW/IPW weights.}
 
 \item{alpha}{Significance level for the confidence interval (default 0.05).}
 
-\item{weight_type}{Either \code{"SBW"} (\code{\link[=get_sbws_for_study]{get_sbws_for_study()}}) or \code{"IPW"}
-(\code{\link[=get_ipws_for_study]{get_ipws_for_study()}}).}
-
 \item{ci_method}{Either \code{"wald"} (default) or \code{"percentile"}.}
-
-\item{ipw_use_glm}{Passed through to \code{\link[=get_ipws_for_study]{get_ipws_for_study()}} when
-\code{weight_type = "IPW"}.}
 
 \item{seed}{Optional seed set at the start of the bootstrap.}
 
@@ -52,7 +44,7 @@ A list with \code{MC_fail}, \code{log_est}, \code{est}, \code{se_log}, \code{ci_
 \code{boot_fail_rate}, \code{boot_n_finite_reps}, and SBW clipping diagnostics
 (\code{sbw_n_clipped_full}, \code{sbw_max_abs_clipped_full},
 \code{sbw_n_clipped_boot_mean}, \code{sbw_n_clipped_boot_max},
-\code{sbw_max_abs_clipped_boot_max}; all \code{NA} when \code{weight_type = "IPW"}).
+\code{sbw_max_abs_clipped_boot_max}).
 }
 \description{
 Bootstraps the standard error of \code{\link[=km_ratio_loglog_greenwood]{km_ratio_loglog_greenwood()}}'s

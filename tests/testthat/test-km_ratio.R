@@ -66,7 +66,7 @@ test_that("boot_km_ratio (SBW, Wald CI) matches pinned bootstrap output", {
   X_subset <- data.frame(x1 = rnorm(n))
 
   res <- boot_km_ratio(time, status, A, X_subset, t0 = 5, B = 200,
-                        weight_type = "SBW", ci_method = "wald", seed = 999)
+                        ci_method = "wald", seed = 999)
 
   expect_false(res$MC_fail)
   expect_equal(res$log_est, 0.00371710267214298, tolerance = 1e-8)
@@ -96,7 +96,7 @@ test_that("boot_km_ratio (SBW, percentile CI) matches pinned bootstrap output", 
   X_subset <- data.frame(x1 = rnorm(n))
 
   res <- boot_km_ratio(time, status, A, X_subset, t0 = 5, B = 200,
-                        weight_type = "SBW", ci_method = "percentile", seed = 999)
+                        ci_method = "percentile", seed = 999)
 
   expect_false(res$MC_fail)
   # point estimate is identical to the Wald-CI call above (same seed / same
@@ -116,7 +116,7 @@ test_that("boot_km_ratio errors (rather than returning a nonsense finite estimat
 
   expect_error(
     boot_km_ratio(time, status, A, X_subset, t0 = 3, B = 50,
-                  weight_type = "SBW", seed = 1),
+                  seed = 1),
     "Unadjusted KM ratio failed"
   )
 })

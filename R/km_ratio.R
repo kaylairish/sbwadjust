@@ -8,9 +8,10 @@
 #   or 1 (e.g. no events in that arm by t0), se_log and the CI are NaN. S is
 #   not nudged into [eps, 1 - eps] for some small eps to avoid this, since
 #   the resulting CI would depend on that arbitrary choice of eps.
-# - boot_km_ratio: SBW or IPW weights; falls back to the unadjusted KM ratio
-#   (MC_fail = TRUE) if the full-sample fit fails; reports SBW clipping
-#   diagnostics; ci_method selects a Wald or percentile CI.
+# - boot_km_ratio: refits SBW weights on each bootstrap resample; falls back
+#   to the unadjusted KM ratio (MC_fail = TRUE) if the full-sample fit fails;
+#   reports SBW clipping diagnostics; ci_method selects a Wald or percentile
+#   CI.
 
 #' Extract survival + SE at a fixed time from a `survfit` object, by arm
 #'
@@ -45,7 +46,7 @@
 #' @param A Treatment indicator (0/1).
 #' @param t0 Time at which to evaluate the survival ratio.
 #' @param alpha Significance level for the confidence interval (default 0.05).
-#' @param weights Optional case weights (e.g. SBW or IPW), passed to
+#' @param weights Optional case weights (e.g. SBW), passed to
 #'   `survival::survfit()`.
 #' @return A list with `S0`, `S1`, `ratio` (= S1(t0)/S0(t0)), `log_ratio`,
 #'   `se_log`, `ci_ratio`, and `ci_log`.
@@ -85,7 +86,7 @@ km_ratio_loglog_greenwood = function(time, status, A, t0, alpha = 0.05, weights 
   )
 }
 
-#' Bootstrap CI for a weighted-KM survival ratio (SBW or IPW)
+#' Bootstrap CI for an SBW-weighted KM survival ratio
 #'
 #' Bootstraps the standard error of [km_ratio_loglog_greenwood()]'s
 #' log-ratio, then builds either a Wald CI (log scale) or a percentile CI
@@ -99,33 +100,26 @@ km_ratio_loglog_greenwood = function(time, status, A, t0, alpha = 0.05, weights 
 #' @param status Event indicator (1 = event, 0 = censored).
 #' @param A Treatment indicator (0/1).
 #' @param X_subset Covariate data frame for the full study sample, used to
-#'   fit the SBW/IPW weights.
+#'   fit the SBW weights.
 #' @param t0 Time at which to evaluate the survival ratio.
 #' @param B Number of bootstrap replicates.
 #' @param alpha Significance level for the confidence interval (default 0.05).
-#' @param weight_type Either `"SBW"` ([get_sbws_for_study()]) or `"IPW"`
-#'   ([get_ipws_for_study()]).
 #' @param ci_method Either `"wald"` (default) or `"percentile"`.
-#' @param ipw_use_glm Passed through to [get_ipws_for_study()] when
-#'   `weight_type = "IPW"`.
 #' @param seed Optional seed set at the start of the bootstrap.
 #' @param verbose Currently unused; reserved for future diagnostic output.
 #' @return A list with `MC_fail`, `log_est`, `est`, `se_log`, `ci_log`, `ci`,
 #'   `boot_fail_rate`, `boot_n_finite_reps`, and SBW clipping diagnostics
 #'   (`sbw_n_clipped_full`, `sbw_max_abs_clipped_full`,
 #'   `sbw_n_clipped_boot_mean`, `sbw_n_clipped_boot_max`,
-#'   `sbw_max_abs_clipped_boot_max`; all `NA` when `weight_type = "IPW"`).
+#'   `sbw_max_abs_clipped_boot_max`).
 #' @export
 boot_km_ratio = function(time, status, A, X_subset, t0,
                          B = 1500,
                          alpha = 0.05,
-                         weight_type = c("SBW", "IPW"),
                          ci_method = c("wald", "percentile"),
-                         ipw_use_glm = TRUE,
                          seed = NULL,
                          verbose = FALSE) {
 
-  weight_type = match.arg(weight_type)
   ci_method = match.arg(ci_method)
   if (!is.null(seed)) set.seed(seed)
 
@@ -136,16 +130,10 @@ boot_km_ratio = function(time, status, A, X_subset, t0,
   # 1) Point estimate attempt
   # -------------------------
   point_est = tryCatch({
-    if (weight_type == "SBW") {
-      sbw_full = get_sbws_for_study(X_subset, A)
-      w_full = sbw_full$w
-      nclip_full = sbw_full$n_clipped
-      maxclip_full = sbw_full$max_abs_clipped
-    } else {
-      w_full = get_ipws_for_study(X_subset, A, use_glm = ipw_use_glm)
-      nclip_full = NA_integer_
-      maxclip_full = NA_real_
-    }
+    sbw_full = get_sbws_for_study(X_subset, A)
+    w_full = sbw_full$w
+    nclip_full = sbw_full$n_clipped
+    maxclip_full = sbw_full$max_abs_clipped
 
     full = km_ratio_loglog_greenwood(time, status, A, t0 = t0, alpha = alpha, weights = w_full)
 
@@ -198,8 +186,8 @@ boot_km_ratio = function(time, status, A, X_subset, t0,
   boot_log = rep(NA_real_, B)
   fail = rep(FALSE, B)
 
-  nclip_boot = if (weight_type == "SBW") rep(NA_integer_, B) else NULL
-  maxclip_boot = if (weight_type == "SBW") rep(NA_real_, B) else NULL
+  nclip_boot = rep(NA_integer_, B)
+  maxclip_boot = rep(NA_real_, B)
 
   for (b in seq_len(B)) {
     idx = sample.int(n, n, replace = TRUE)
@@ -209,14 +197,10 @@ boot_km_ratio = function(time, status, A, X_subset, t0,
     X_boot = X_subset[idx, , drop = FALSE]
 
     bootstrap_point_est = tryCatch({
-      if (weight_type == "SBW") {
-        sbw_boot = get_sbws_for_study(X_boot, A_boot)
-        w_boot = sbw_boot$w
-        nclip_boot[b] = sbw_boot$n_clipped
-        maxclip_boot[b] = sbw_boot$max_abs_clipped
-      } else {
-        w_boot = get_ipws_for_study(X_boot, A_boot, use_glm = ipw_use_glm)
-      }
+      sbw_boot = get_sbws_for_study(X_boot, A_boot)
+      w_boot = sbw_boot$w
+      nclip_boot[b] = sbw_boot$n_clipped
+      maxclip_boot[b] = sbw_boot$max_abs_clipped
 
       km_ratio_loglog_greenwood(time_boot, status_boot, A_boot, t0 = t0, alpha = alpha, weights = w_boot)$log_ratio
     }, error = function(e) NA_real_)
@@ -258,11 +242,11 @@ boot_km_ratio = function(time, status, A, X_subset, t0,
       boot_fail_rate = fail_rate,
       boot_n_finite_reps = boot_n_finite_reps,
 
-      sbw_n_clipped_full = if (weight_type == "SBW") point_est$nclip_full else NA_integer_,
-      sbw_max_abs_clipped_full = if (weight_type == "SBW") point_est$maxclip_full else NA_real_,
-      sbw_n_clipped_boot_mean = if (weight_type == "SBW") mean(nclip_boot, na.rm = TRUE) else NA_real_,
-      sbw_n_clipped_boot_max  = if (weight_type == "SBW") max(nclip_boot, na.rm = TRUE) else NA_integer_,
-      sbw_max_abs_clipped_boot_max = if (weight_type == "SBW") max(maxclip_boot, na.rm = TRUE) else NA_real_
+      sbw_n_clipped_full = point_est$nclip_full,
+      sbw_max_abs_clipped_full = point_est$maxclip_full,
+      sbw_n_clipped_boot_mean = mean(nclip_boot, na.rm = TRUE),
+      sbw_n_clipped_boot_max  = max(nclip_boot, na.rm = TRUE),
+      sbw_max_abs_clipped_boot_max = max(maxclip_boot, na.rm = TRUE)
     ))
   }
 
@@ -283,10 +267,10 @@ boot_km_ratio = function(time, status, A, X_subset, t0,
     boot_n_finite_reps = boot_n_finite_reps,
 
     # SBW clipping diagnostics
-    sbw_n_clipped_full = if (weight_type == "SBW") point_est$nclip_full else NA_integer_,
-    sbw_max_abs_clipped_full = if (weight_type == "SBW") point_est$maxclip_full else NA_real_,
-    sbw_n_clipped_boot_mean = if (weight_type == "SBW") mean(nclip_boot, na.rm = TRUE) else NA_real_,
-    sbw_n_clipped_boot_max  = if (weight_type == "SBW") max(nclip_boot, na.rm = TRUE) else NA_integer_,
-    sbw_max_abs_clipped_boot_max = if (weight_type == "SBW") max(maxclip_boot, na.rm = TRUE) else NA_real_
+    sbw_n_clipped_full = point_est$nclip_full,
+    sbw_max_abs_clipped_full = point_est$maxclip_full,
+    sbw_n_clipped_boot_mean = mean(nclip_boot, na.rm = TRUE),
+    sbw_n_clipped_boot_max  = max(nclip_boot, na.rm = TRUE),
+    sbw_max_abs_clipped_boot_max = max(maxclip_boot, na.rm = TRUE)
   )
 }
