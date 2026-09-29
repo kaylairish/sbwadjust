@@ -122,7 +122,16 @@
 #'   accepted; an uncovered estimand means: take `weights(object)` and run
 #'   (and bootstrap) your own estimator.
 #' @param ... Passed to methods.
-#' @return An object of class `sbw_estimate`.
+#' @return An object of class `sbw_estimate`: a list with `estimand`;
+#'   `estimate` (named by estimand, or `q<p>` per quantile); `se`, the
+#'   bootstrap standard error (on the log scale when `scale = "log"`); `ci`,
+#'   a matrix with one row per estimate (lower, upper) on the estimate's own
+#'   scale; `scale` (`"log"` for `"RR"`, `"quantile_ratio"`, and
+#'   `"survival_ratio"`, otherwise `"identity"`); `alpha`; and `B`. Most
+#'   estimands also return `boot_fail_rate`, the fraction of bootstrap
+#'   resamples that failed. `"survival_ratio"` instead returns `horizon`,
+#'   `mc_fail`, and `detail` (the full [boot_km_ratio()] result, which
+#'   includes its own `boot_fail_rate`).
 #' @export
 sbw_estimate = function(object, outcome, estimand, ...) {
   UseMethod("sbw_estimate")

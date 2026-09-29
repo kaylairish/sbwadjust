@@ -57,7 +57,16 @@ for \code{estimand = "survival_ratio"}.}
 \item{seed}{Optional seed set at the start of the bootstrap.}
 }
 \value{
-An object of class \code{sbw_estimate}.
+An object of class \code{sbw_estimate}: a list with \code{estimand};
+\code{estimate} (named by estimand, or \verb{q<p>} per quantile); \code{se}, the
+bootstrap standard error (on the log scale when \code{scale = "log"}); \code{ci},
+a matrix with one row per estimate (lower, upper) on the estimate's own
+scale; \code{scale} (\code{"log"} for \code{"RR"}, \code{"quantile_ratio"}, and
+\code{"survival_ratio"}, otherwise \code{"identity"}); \code{alpha}; and \code{B}. Most
+estimands also return \code{boot_fail_rate}, the fraction of bootstrap
+resamples that failed. \code{"survival_ratio"} instead returns \code{horizon},
+\code{mc_fail}, and \code{detail} (the full \code{\link[=boot_km_ratio]{boot_km_ratio()}} result, which
+includes its own \code{boot_fail_rate}).
 }
 \description{
 Estimate a treatment effect from a fitted \code{sbw_fit} object
