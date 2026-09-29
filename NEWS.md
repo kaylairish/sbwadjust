@@ -17,6 +17,10 @@
   resample uses the unadjusted KM ratio.
 * `km_ratio_greenwood()` now accepts a factor treatment indicator, and its
   help page notes that the SE treats the weights as fixed.
+* `sbw_estimate()` now stops with a clear message when the outcome has a
+  different length from the data the weights were fit on (e.g. an outcome
+  variable missing from `data` that R found elsewhere), instead of failing
+  later with an unrelated bootstrap error.
 
 # sbwadjust 0.2.0
 

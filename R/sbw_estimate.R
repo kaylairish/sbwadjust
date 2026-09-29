@@ -90,6 +90,12 @@
 
   mf = stats::model.frame(outcome, data = data, na.action = stats::na.pass)
   resp = stats::model.response(mf)
+  # an outcome variable missing from `data` is looked up in the formula's
+  # environment instead (as in lm()), so its length isn't guaranteed
+  if (NROW(resp) != object$n) {
+    stop("The outcome has ", NROW(resp), " values but the weights were fit on ",
+         object$n, " rows; is the outcome variable a column of `data`?")
+  }
   if (anyNA(resp)) stop("Missing values in the outcome are not supported.")
   resp
 }

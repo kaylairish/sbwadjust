@@ -217,6 +217,10 @@ test_that("sbw_estimate rejects outcome data that doesn't line up with the fit",
   expect_error(sbw_estimate(sbw, Y ~ 1, "ATE", data = df[-1, ], B = 10), "rows")
   expect_error(sbw_estimate(sbw, Y ~ 1, "ATE", data = df[nrow(df):1, ], B = 10), "differs")
 
+  # outcome not in `data`: a same-named variable of the wrong length is caught
+  Y_stray = rnorm(nrow(df) - 5)
+  expect_error(sbw_estimate(sbw, Y_stray ~ 1, "ATE", data = df, B = 10), "values but the weights")
+
   df_na = df
   df_na$Y[1] = NA
   expect_error(sbw_estimate(sbw, Y ~ 1, "ATE", data = df_na, B = 10), "Missing values")
