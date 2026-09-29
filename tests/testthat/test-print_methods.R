@@ -39,6 +39,16 @@ test_that("print.sbw_fit names the treated and control levels for a character tr
   expect_false(any(grepl("[", capture.output(print(sbw_num)), fixed = TRUE)))
 })
 
+test_that("print.sbw_fit keeps a long balance formula on one line, without deparse's padding", {
+  df = make_print_toy()
+  for (v in c("height_cm", "weight_kg", "systolic_bp", "cholesterol")) df[[v]] = rnorm(nrow(df))
+  sbw = sbw_weights(~ age + bmi + height_cm + weight_kg + systolic_bp + cholesterol,
+                    data = df, treatment = arm)
+  out = capture.output(print(sbw))
+  expect_true(any(grepl("cholesterol", out)))
+  expect_false(any(grepl("\\+\\s{2,}", out)))
+})
+
 test_that("print.summary.sbw_fit shows the balance table and ESS", {
   df = make_print_toy()
   s = summary(sbw_weights(~ age + bmi, data = df, treatment = arm))

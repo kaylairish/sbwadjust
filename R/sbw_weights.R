@@ -70,7 +70,11 @@
     }
     return(list(name = raw, raw = data[[raw]]))
   }
-  name = if (is.symbol(treatment_expr)) as.character(treatment_expr) else deparse(treatment_expr)
+  name = if (is.symbol(treatment_expr)) {
+    as.character(treatment_expr)
+  } else {
+    paste(deparse(treatment_expr, width.cutoff = 500L), collapse = " ")
+  }
   list(name = name, raw = raw)
 }
 
@@ -140,7 +144,7 @@ sbw_weights = function(balance, data, treatment) {
 #' @export
 print.sbw_fit = function(x, ...) {
   cat("<sbw_fit>\n")
-  cat("  balance: ", deparse(x$balance), "\n", sep = "")
+  cat("  balance: ", paste(deparse(x$balance, width.cutoff = 500L), collapse = " "), "\n", sep = "")
   # name the arms when the treated level isn't self-evident (factor/character)
   lv = names(x$treatment_levels)
   arm_label = if (identical(lv, c("0", "1")) || identical(lv, c("FALSE", "TRUE"))) {
