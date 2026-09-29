@@ -50,6 +50,10 @@
 * `summary()` no longer reports an effective sample size. The Kish ESS
   measures how concentrated the weights are, not the precision of the
   treatment-effect estimate, and was easy to misread as the latter.
+* Fixed: `plot.sbw_fit()` failed when given `main`, `xlim`, `xlab` or `ylab`
+  (documented as passed on to `plot()`); these now override the defaults.
+  The plot also lists covariates top-down in formula order and widens the
+  left margin so long covariate names are not cut off.
 
 # sbwadjust 0.2.0
 

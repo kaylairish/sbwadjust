@@ -271,7 +271,8 @@ print.summary.sbw_fit = function(x, ...) {
 #' covariate, unweighted and SBW-weighted.
 #'
 #' @param x An `sbw_fit` from [sbw_weights()].
-#' @param ... Passed on to the underlying `graphics::plot()` call.
+#' @param ... Passed on to the underlying `graphics::plot()` call; these
+#'   override the defaults (e.g. `main = "My trial"`, `xlim = c(-1, 1)`).
 #' @return `x`, invisibly.
 #' @export
 plot.sbw_fit = function(x, ...) {
@@ -292,12 +293,23 @@ plot.sbw_fit = function(x, ...) {
   }, numeric(1))
 
   covs = colnames(X)
-  yy = seq_along(covs)
+  # first covariate at the top, reading down in formula order
+  yy = rev(seq_along(covs))
   xr = range(c(unw, wtd, 0), na.rm = TRUE)
 
-  graphics::plot(unw, yy, pch = 1, xlim = xr, yaxt = "n",
-                 xlab = "Standardized mean difference", ylab = "",
-                 main = "Covariate balance", ...)
+  # widen the left margin to fit the covariate names; restored on exit
+  mar = graphics::par("mar")
+  mar[2] = max(mar[2], 0.5 * max(nchar(covs)) + 1)
+  old_par = graphics::par(mar = mar)
+  on.exit(graphics::par(old_par))
+
+  # arguments passed in `...` override these defaults (e.g. main, xlim)
+  plot_args = list(pch = 1, xlim = xr, ylim = c(0.5, length(covs) + 1), yaxt = "n",
+                   xlab = "Standardized mean difference", ylab = "",
+                   main = "Covariate balance")
+  dots = list(...)
+  plot_args[names(dots)] = dots
+  do.call(graphics::plot, c(list(unw, yy), plot_args))
   graphics::points(wtd, yy, pch = 16)
   graphics::axis(2, at = yy, labels = covs, las = 1)
   graphics::abline(v = 0, lty = 2)

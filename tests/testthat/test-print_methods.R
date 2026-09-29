@@ -100,6 +100,18 @@ test_that("plot.sbw_fit draws without error and returns x invisibly", {
   expect_identical(out, sbw)
 })
 
+test_that("plot.sbw_fit lets `...` override its defaults and restores par()", {
+  df = make_print_toy()
+  sbw = sbw_weights(~ age + bmi, data = df, treatment = arm)
+
+  grDevices::pdf(NULL)
+  on.exit(grDevices::dev.off(), add = TRUE)
+
+  mar0 = graphics::par("mar")
+  expect_silent(plot(sbw, main = "My trial", xlim = c(-1, 1), xlab = "SMD", col = "red"))
+  expect_equal(graphics::par("mar"), mar0)
+})
+
 test_that("print.sbw_estimate shows the estimand and a CI line", {
   df = make_print_toy()
   sbw = sbw_weights(~ age + bmi, data = df, treatment = arm)

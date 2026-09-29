@@ -9,7 +9,8 @@
 \arguments{
 \item{x}{An \code{sbw_fit} from \code{\link[=sbw_weights]{sbw_weights()}}.}
 
-\item{...}{Passed on to the underlying \code{graphics::plot()} call.}
+\item{...}{Passed on to the underlying \code{graphics::plot()} call; these
+override the defaults (e.g. \code{main = "My trial"}, \code{xlim = c(-1, 1)}).}
 }
 \value{
 \code{x}, invisibly.
