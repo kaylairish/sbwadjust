@@ -5,6 +5,7 @@ First CRAN submission of sbwadjust (0.3.0).
 ## Test environments
 
 * local macOS, R 4.3.2: R CMD check --as-cran (with CRAN incoming checks)
+* win-builder (devel): R Under development (unstable) (2026-09-25 r90590 ucrt)
 * R-hub (R-devel): linux, windows, macos-arm64 -- all OK
 * GitHub Actions: macOS, Windows (R release); Ubuntu (R devel, release,
   oldrel-1) -- all OK
@@ -13,12 +14,12 @@ First CRAN submission of sbwadjust (0.3.0).
 
 0 errors | 0 warnings | 1 note
 
-The note is the CRAN incoming feasibility check:
+The note is the CRAN incoming feasibility check, covering two items:
 
 * "New submission" -- this is the package's first release.
 
-* It may also list "Possibly misspelled words in DESCRIPTION: Luedtke, SBW,
-  Zubizarreta, estimands". Luedtke and Zubizarreta are co-author surnames,
+* "Possibly misspelled words in DESCRIPTION: Luedtke, SBW, Zubizarreta,
+  estimands". Luedtke and Zubizarreta are co-author surnames,
   SBW is the standard abbreviation for stable balancing weights (spelled out
   in the same sentence), and "estimands" is standard statistical terminology.
 
