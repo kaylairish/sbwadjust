@@ -99,6 +99,29 @@ test_that("sbw_estimate RR is exp() of the log-scale weighted-mean-ratio point e
   expect_true(all(res$ci > 0))
 })
 
+test_that("sbw_estimate RR drops resamples with an infinite estimate (rare control events)", {
+  set.seed(3)
+  df = data.frame(age = rnorm(60, 50, 10), arm = rep(0:1, 30), Y = 0)
+  df$Y[df$arm == 0][1] = 1   # a single control event: some resamples draw none
+  df$Y[df$arm == 1][1:3] = 1
+  sbw = sbw_weights(~ age, data = df, treatment = arm)
+
+  res = sbw_estimate(sbw, Y ~ 1, estimand = "RR", B = 200, seed = 1)
+
+  expect_true(is.finite(res$se))
+  expect_true(all(is.finite(res$ci)))
+  expect_gt(res$boot_fail_rate, 0)
+})
+
+test_that("sbw_estimate rejects a Surv outcome for a non-survival estimand", {
+  df = make_toy_trial()
+  outcomes = data.frame(t = rexp(nrow(df)), d = 1)
+  sbw = sbw_weights(~ age + bmi, data = df, treatment = arm)
+
+  expect_error(sbw_estimate(sbw, Surv(t, d) ~ 1, "ATE", data = outcomes, B = 10),
+               "only supported for estimand = \"survival_ratio\"")
+})
+
 test_that("sbw_estimate survival_ratio matches boot_km_ratio() called directly", {
   df = make_toy_trial()
   df$time = rexp(nrow(df), rate = 0.05 + 0.01 * df$arm)

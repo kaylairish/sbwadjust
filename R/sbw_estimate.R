@@ -208,6 +208,9 @@ sbw_estimate.sbw_fit = function(object, outcome, estimand, data = NULL,
     ))
   }
 
+  if (inherits(resp, "Surv")) {
+    stop("A Surv(time, status) outcome is only supported for estimand = \"survival_ratio\".")
+  }
   Y = resp
 
   point_fun = switch(estimand,
@@ -246,7 +249,9 @@ sbw_estimate.sbw_fit = function(object, outcome, estimand, data = NULL,
     boot_reps[b, ] = rep_est
   }
 
-  finite_rows = stats::complete.cases(boot_reps)
+  # a resample can give Inf (e.g. RR with no control events drawn), which
+  # complete.cases() would keep; count it as failed instead
+  finite_rows = rowSums(!is.finite(boot_reps)) == 0L
   if (sum(finite_rows) < 2L) {
     stop("Bootstrap failed for nearly all resamples; cannot estimate a standard error.")
   }

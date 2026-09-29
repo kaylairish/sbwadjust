@@ -21,6 +21,12 @@
   different length from the data the weights were fit on (e.g. an outcome
   variable missing from `data` that R found elsewhere), instead of failing
   later with an unrelated bootstrap error.
+* Fixed: `sbw_estimate()` returned an `NaN` standard error and CI when some
+  bootstrap resamples gave an infinite estimate (e.g. `"RR"` with a rare
+  outcome, where a resample can draw no control events). Those resamples now
+  count as failed and are reported in `boot_fail_rate`.
+* `sbw_estimate()` now gives a clear error when a `Surv()` outcome is used
+  with an estimand other than `"survival_ratio"`.
 
 # sbwadjust 0.2.0
 
