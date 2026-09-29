@@ -39,6 +39,18 @@ test_that("print.sbw_fit names the treated and control levels for a character tr
   expect_false(any(grepl("[", capture.output(print(sbw_num)), fixed = TRUE)))
 })
 
+test_that("print.sbw_fit counts zero-weight units per arm, and is silent when there are none", {
+  set.seed(14)
+  d = data.frame(x = c(rexp(8, 1), rnorm(40, 1.2)), a = rep(1:0, c(8, 40)))
+  sbw = sbw_weights(~ x, data = d, treatment = a)
+  n0 = sum(sbw$weights[d$a == 1] < 1e-10)
+  expect_gt(n0, 0L)
+  expect_output(print(sbw), paste0(n0, " of 8 treated units got weight 0"), fixed = TRUE)
+
+  sbw_ok = sbw_weights(~ age + bmi, data = make_print_toy(), treatment = arm)
+  expect_false(any(grepl("note:", capture.output(print(sbw_ok)), fixed = TRUE)))
+})
+
 test_that("print.sbw_fit keeps a long balance formula on one line, without deparse's padding", {
   df = make_print_toy()
   for (v in c("height_cm", "weight_kg", "systolic_bp", "cholesterol")) df[[v]] = rnorm(nrow(df))

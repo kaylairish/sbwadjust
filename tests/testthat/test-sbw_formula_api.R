@@ -92,6 +92,22 @@ test_that("sbw_weights() gives clear errors for NA or single-arm treatment", {
   expect_error(sbw_weights(~ age, data = df, treatment = one_arm), "only one arm")
 })
 
+test_that("sbw_weights() gives clear errors for collinear or infeasible balance", {
+  df = make_toy_trial()
+  df$age_months = 12 * df$age
+  expect_error(sbw_weights(~ age + age_months, data = df, treatment = arm),
+               "collinear within the (treated|control) arm")
+
+  # a factor level that never occurs in the control arm
+  df$site = ifelse(df$arm == 1 & seq_len(nrow(df)) == which(df$arm == 1)[1], "C", "A")
+  expect_error(sbw_weights(~ age + site, data = df, treatment = arm),
+               "collinear within the control arm")
+
+  # every treated x lies above the pooled mean: no nonnegative weights balance it
+  d = data.frame(x = c(3:7, seq(-1, 1, length.out = 25)), a = rep(1:0, c(5, 25)))
+  expect_error(sbw_weights(~ x, data = d, treatment = a), "Exact balance is infeasible")
+})
+
 test_that("weights.sbw_fit() returns the same vector as sbw$weights", {
   df = make_toy_trial()
   sbw = sbw_weights(~ age + bmi, data = df, treatment = arm)

@@ -37,6 +37,14 @@
 * `?sbw_weights` now states which level of a factor or character treatment
   is treated (the second level; alphabetical for character), and
   `print.sbw_fit()` names the treated and control levels in that case.
+* `sbw_weights()` now gives clear errors when the balance covariates are
+  collinear within an arm (including a factor level that never occurs in one
+  arm) or when exact balance with nonnegative weights is infeasible, instead
+  of the solver's "system is exactly singular" or quadprog's "constraints are
+  inconsistent, no solution!".
+* `print.sbw_fit()` now reports how many units in each arm got weight 0,
+  replacing the "weight(s) clipped at 0" note, which counted rounding noise
+  in the solver rather than dropped units.
 
 # sbwadjust 0.2.0
 

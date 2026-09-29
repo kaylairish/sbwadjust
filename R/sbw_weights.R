@@ -121,7 +121,32 @@ sbw_weights = function(balance, data, treatment) {
   if (anyNA(X)) stop("Missing values in the balance covariates are not supported.")
   if (nrow(X) != length(A)) stop("`data` and `treatment` do not have the same length.")
 
-  fit = get_sbws_for_study(X, A)
+  # the closed-form solve needs each arm's [1, X] to have full column rank
+  for (arm in c(1L, 0L)) {
+    Xa = cbind(1, as.matrix(X[A == arm, , drop = FALSE]))
+    if (qr(Xa)$rank < ncol(Xa)) {
+      stop("Balance covariates are collinear within the ",
+           if (arm == 1L) "treated" else "control",
+           " arm; drop or combine redundant ones.")
+    }
+  }
+
+  # translate solver errors that the rank check doesn't catch
+  fit = tryCatch(get_sbws_for_study(X, A), error = function(e) e)
+  if (inherits(fit, "error")) {
+    msg = conditionMessage(fit)
+    if (grepl("constraints are inconsistent", msg, fixed = TRUE)) {
+      stop("Exact balance is infeasible: no nonnegative weights in one arm ",
+           "reproduce the pooled mean of the balance covariates. This is an ",
+           "overlap problem: on some covariate (or combination of covariates), ",
+           "one arm's values all lie on one side of the pooled mean. Compare ",
+           "the arms' ranges, e.g. tapply(x, arm, range).")
+    }
+    if (grepl("singular", msg, fixed = TRUE)) {
+      stop("Balance covariates are collinear within one arm; drop or combine redundant ones.")
+    }
+    stop(fit)
+  }
 
   structure(
     list(
@@ -154,9 +179,16 @@ print.sbw_fit = function(x, ...) {
   }
   cat("  n:       ", x$n, " (", sum(x$treatment == 1L), " treated", arm_label[2], ", ",
       sum(x$treatment == 0L), " control", arm_label[1], ")\n", sep = "")
-  if (x$n_clipped > 0L) {
-    cat("  note:    ", x$n_clipped,
-        " weight(s) clipped at 0 (nonnegative-QP fallback used)\n", sep = "")
+  # count zero weights directly: n_clipped counts QP rounding noise, not units
+  # dropped, and varies by platform
+  zero = x$weights < 1e-10
+  n_arm = c(treated = sum(x$treatment == 1L), control = sum(x$treatment == 0L))
+  n_zero = c(treated = sum(zero & x$treatment == 1L), control = sum(zero & x$treatment == 0L))
+  if (any(n_zero > 0L)) {
+    parts = paste0(n_zero, " of ", n_arm, " ", names(n_arm))[n_zero > 0L]
+    cat("  note:    ", paste(parts, collapse = " and "),
+        " units got weight 0, so they don't contribute\n",
+        "           to the estimate; the rest carry the balance. See summary().\n", sep = "")
   }
   invisible(x)
 }
