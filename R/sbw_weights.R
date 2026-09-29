@@ -179,18 +179,38 @@ print.sbw_fit = function(x, ...) {
   }
   cat("  n:       ", x$n, " (", sum(x$treatment == 1L), " treated", arm_label[2], ", ",
       sum(x$treatment == 0L), " control", arm_label[1], ")\n", sep = "")
-  # count zero weights directly: n_clipped counts QP rounding noise, not units
-  # dropped, and varies by platform
-  zero = x$weights < 1e-10
+  n_zero = .n_zero_by_arm(x$weights, x$treatment)
   n_arm = c(treated = sum(x$treatment == 1L), control = sum(x$treatment == 0L))
-  n_zero = c(treated = sum(zero & x$treatment == 1L), control = sum(zero & x$treatment == 0L))
   if (any(n_zero > 0L)) {
-    parts = paste0(n_zero, " of ", n_arm, " ", names(n_arm))[n_zero > 0L]
-    cat("  note:    ", paste(parts, collapse = " and "),
+    cat("  note:    ", .zero_weight_phrase(n_zero, n_arm),
         " units got weight 0, so they don't contribute\n",
         "           to the estimate; the rest carry the balance. See summary().\n", sep = "")
   }
   invisible(x)
+}
+
+#' Count units with (numerically) zero SBW weight in each arm
+#'
+#' Counted directly from the weights rather than from `n_clipped`, which
+#' counts QP rounding noise (not units dropped) and varies by platform.
+#'
+#' @param w Numeric vector of SBW weights.
+#' @param A 0/1 treatment vector.
+#' @return Named integer vector `c(treated = , control = )`.
+#' @keywords internal
+.n_zero_by_arm = function(w, A) {
+  zero = w < 1e-10
+  c(treated = sum(zero & A == 1L), control = sum(zero & A == 0L))
+}
+
+#' Phrase zero-weight counts, e.g. "6 of 8 treated and 2 of 40 control"
+#'
+#' @param n_zero,n_arm Named integer vectors `c(treated = , control = )`.
+#' @return A character string covering the arms with any zero weights.
+#' @keywords internal
+.zero_weight_phrase = function(n_zero, n_arm) {
+  parts = paste0(n_zero, " of ", n_arm, " ", names(n_arm))[n_zero > 0L]
+  paste(parts, collapse = " and ")
 }
 
 #' @importFrom stats weights
@@ -202,7 +222,10 @@ weights.sbw_fit = function(object, ...) object$weights
 #' @param object An `sbw_fit` from [sbw_weights()].
 #' @param ... Currently unused.
 #' @return An object of class `summary.sbw_fit`, printed by
-#'   `print.summary.sbw_fit()`.
+#'   `print.summary.sbw_fit()`, with elements `balance` (unweighted and
+#'   SBW-weighted arm means of each balance column), `ess_treated`,
+#'   `ess_control` (Kish effective sample sizes), `n_treated`, `n_control`, and
+#'   `n_zero` (units with weight 0, by arm).
 #' @export
 summary.sbw_fit = function(object, ...) {
   X = object$X
@@ -228,8 +251,7 @@ summary.sbw_fit = function(object, ...) {
       ess_control = ess(w[A == 0L]),
       n_treated = sum(A == 1L),
       n_control = sum(A == 0L),
-      n_clipped = object$n_clipped,
-      max_abs_clipped = object$max_abs_clipped
+      n_zero = .n_zero_by_arm(w, A)
     ),
     class = "summary.sbw_fit"
   )
@@ -238,13 +260,14 @@ summary.sbw_fit = function(object, ...) {
 #' @export
 print.summary.sbw_fit = function(x, ...) {
   cat("Balance (unweighted vs. SBW-weighted arm means):\n")
-  print(x$balance, row.names = FALSE)
+  print(x$balance, digits = 4, row.names = FALSE)
   cat("\nEffective sample size: ",
       round(x$ess_treated, 1), " treated (of ", x$n_treated, "), ",
       round(x$ess_control, 1), " control (of ", x$n_control, ")\n", sep = "")
-  if (x$n_clipped > 0L) {
-    cat("Clipped weights: ", x$n_clipped,
-        " (max magnitude ", signif(x$max_abs_clipped, 3), ")\n", sep = "")
+  if (any(x$n_zero > 0L)) {
+    n_arm = c(treated = x$n_treated, control = x$n_control)
+    cat("Zero weights: ", .zero_weight_phrase(x$n_zero, n_arm),
+        " units got weight 0.\n", sep = "")
   }
   invisible(x)
 }

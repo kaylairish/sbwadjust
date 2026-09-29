@@ -74,6 +74,19 @@ test_that("print.summary.sbw_fit shows the balance table and ESS", {
 
   expect_output(out <- print(s))
   expect_identical(out, s)
+  expect_false(any(grepl("Zero weights", capture.output(print(s)), fixed = TRUE)))
+})
+
+test_that("summary.sbw_fit counts zero-weight units per arm and prints them", {
+  set.seed(14)
+  d = data.frame(x = c(rexp(8, 1), rnorm(40, 1.2)), a = rep(1:0, c(8, 40)))
+  sbw = sbw_weights(~ x, data = d, treatment = a)
+  s = summary(sbw)
+
+  expect_equal(s$n_zero, .n_zero_by_arm(sbw$weights, sbw$treatment))
+  expect_gt(s$n_zero[["treated"]], 0L)
+  expect_output(print(s), paste0("Zero weights: ", s$n_zero[["treated"]], " of 8 treated"),
+                fixed = TRUE)
 })
 
 test_that("plot.sbw_fit draws without error and returns x invisibly", {

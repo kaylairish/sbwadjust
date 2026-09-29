@@ -44,7 +44,9 @@
   inconsistent, no solution!".
 * `print.sbw_fit()` now reports how many units in each arm got weight 0,
   replacing the "weight(s) clipped at 0" note, which counted rounding noise
-  in the solver rather than dropped units.
+  in the solver rather than dropped units. `summary()` does the same: its
+  `n_clipped` / `max_abs_clipped` elements are replaced by `n_zero` (by
+  arm), and its balance table prints to 4 significant digits.
 
 # sbwadjust 0.2.0
 
