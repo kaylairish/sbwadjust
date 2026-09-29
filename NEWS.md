@@ -27,6 +27,10 @@
   count as failed and are reported in `boot_fail_rate`.
 * `sbw_estimate()` now gives a clear error when a `Surv()` outcome is used
   with an estimand other than `"survival_ratio"`.
+* `sbw_weights()` now accepts the treatment column name as a string
+  (`treatment = "arm"`, or a variable holding it), not only unquoted.
+  Previously a quoted name failed with a misleading "exactly two levels"
+  error.
 
 # sbwadjust 0.2.0
 

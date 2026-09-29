@@ -45,15 +45,15 @@
   list(A = as.integer(levels_map[as.character(f)]), levels = levels_map)
 }
 
-#' Resolve the `treatment` argument (bare column name or vector) against `data`
+#' Resolve the `treatment` argument (column name or vector) against `data`
 #'
 #' @param treatment_expr The unevaluated `treatment` argument, from
 #'   `substitute(treatment)`.
-#' @param data Data frame to resolve a bare column name against.
+#' @param data Data frame to resolve a column name against.
 #' @param env Environment to evaluate `treatment_expr` in if it isn't a
 #'   column of `data` (e.g. a vector supplied directly).
-#' @return A list with `name` (character, for reporting/bootstrap re-lookup)
-#'   and `raw` (the resolved vector).
+#' @return A list with `name` (character, a label for reporting) and `raw`
+#'   (the resolved vector).
 #' @keywords internal
 .resolve_treatment = function(treatment_expr, data, env) {
   if (is.symbol(treatment_expr) && as.character(treatment_expr) %in% names(data)) {
@@ -61,6 +61,14 @@
     return(list(name = name, raw = data[[name]]))
   }
   raw = eval(treatment_expr, data, env)
+  # a single string is a column name, quoted (treatment = "arm") or held in a
+  # variable (treatment = trt_col), not a one-element treatment vector
+  if (is.character(raw) && length(raw) == 1L) {
+    if (!raw %in% names(data)) {
+      stop("`treatment` \"", raw, "\" is not a column of `data`.")
+    }
+    return(list(name = raw, raw = data[[raw]]))
+  }
   name = if (is.symbol(treatment_expr)) as.character(treatment_expr) else deparse(treatment_expr)
   list(name = name, raw = raw)
 }
@@ -76,8 +84,8 @@
 #' @param balance One-sided formula naming the covariates to balance, e.g.
 #'   `~ age + sex + bmi + region`.
 #' @param data Data frame containing the balance covariates and treatment.
-#' @param treatment Treatment assignment: either a bare column name in
-#'   `data` (unquoted, as in `treatment = arm`) or a vector. Accepts numeric
+#' @param treatment Treatment assignment: either a column name in `data`,
+#'   unquoted (`treatment = arm`) or quoted (`treatment = "arm"`), or a vector. Accepts numeric
 #'   0/1, logical, or a two-level factor/character vector.
 #' @return An object of class `sbw_fit` with elements `weights`, `n_clipped`,
 #'   `max_abs_clipped` (see [get_sbws_for_study()]), `balance` (the formula),

@@ -50,6 +50,20 @@ test_that("sbw_weights() recodes a factor/character treatment consistently", {
   expect_equal(sbw_chr$weights, sbw_num$weights, tolerance = 1e-8)
 })
 
+test_that("sbw_weights() accepts a quoted treatment column name", {
+  df = make_toy_trial()
+  sbw_bare = sbw_weights(~ age + bmi, data = df, treatment = arm)
+  sbw_quoted = sbw_weights(~ age + bmi, data = df, treatment = "arm")
+  trt_col = "arm"
+  sbw_var = sbw_weights(~ age + bmi, data = df, treatment = trt_col)
+
+  expect_equal(sbw_quoted$treatment_name, "arm")
+  expect_equal(sbw_quoted$weights, sbw_bare$weights)
+  expect_equal(sbw_var$weights, sbw_bare$weights)
+  expect_error(sbw_weights(~ age, data = df, treatment = "Arm"),
+               "\"Arm\" is not a column of `data`")
+})
+
 test_that("sbw_weights() rejects non-0/1 numeric treatment and NA covariates", {
   df = make_toy_trial()
   expect_error(sbw_weights(~ age, data = df, treatment = age), "0/1")

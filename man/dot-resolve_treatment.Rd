@@ -2,7 +2,7 @@
 % Please edit documentation in R/sbw_weights.R
 \name{.resolve_treatment}
 \alias{.resolve_treatment}
-\title{Resolve the \code{treatment} argument (bare column name or vector) against \code{data}}
+\title{Resolve the \code{treatment} argument (column name or vector) against \code{data}}
 \usage{
 .resolve_treatment(treatment_expr, data, env)
 }
@@ -10,16 +10,16 @@
 \item{treatment_expr}{The unevaluated \code{treatment} argument, from
 \code{substitute(treatment)}.}
 
-\item{data}{Data frame to resolve a bare column name against.}
+\item{data}{Data frame to resolve a column name against.}
 
 \item{env}{Environment to evaluate \code{treatment_expr} in if it isn't a
 column of \code{data} (e.g. a vector supplied directly).}
 }
 \value{
-A list with \code{name} (character, for reporting/bootstrap re-lookup)
-and \code{raw} (the resolved vector).
+A list with \code{name} (character, a label for reporting) and \code{raw}
+(the resolved vector).
 }
 \description{
-Resolve the \code{treatment} argument (bare column name or vector) against \code{data}
+Resolve the \code{treatment} argument (column name or vector) against \code{data}
 }
 \keyword{internal}

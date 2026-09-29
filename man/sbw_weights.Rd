@@ -12,8 +12,8 @@ sbw_weights(balance, data, treatment)
 
 \item{data}{Data frame containing the balance covariates and treatment.}
 
-\item{treatment}{Treatment assignment: either a bare column name in
-\code{data} (unquoted, as in \code{treatment = arm}) or a vector. Accepts numeric
+\item{treatment}{Treatment assignment: either a column name in \code{data},
+unquoted (\code{treatment = arm}) or quoted (\code{treatment = "arm"}), or a vector. Accepts numeric
 0/1, logical, or a two-level factor/character vector.}
 }
 \value{
