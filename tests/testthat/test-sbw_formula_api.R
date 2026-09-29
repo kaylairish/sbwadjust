@@ -73,6 +73,25 @@ test_that("sbw_weights() rejects non-0/1 numeric treatment and NA covariates", {
   expect_error(sbw_weights(~ age, data = df_na, treatment = arm), "Missing values")
 })
 
+test_that("sbw_weights() gives clear errors for NA or single-arm treatment", {
+  df = make_toy_trial()
+  n = nrow(df)
+
+  df_na = df
+  df_na$arm[3] = NA
+  expect_error(sbw_weights(~ age, data = df_na, treatment = arm),
+               "Missing values in `treatment`")
+  df_na$arm_f = factor(df_na$arm)
+  expect_error(sbw_weights(~ age, data = df_na, treatment = arm_f),
+               "Missing values in `treatment`")
+
+  expect_error(sbw_weights(~ age, data = df, treatment = rep(1, n)), "only one arm")
+  expect_error(sbw_weights(~ age, data = df, treatment = rep(TRUE, n)), "only one arm")
+  # a two-level factor with one level unused is still one arm
+  one_arm = factor(rep("Drug", n), levels = c("Placebo", "Drug"))
+  expect_error(sbw_weights(~ age, data = df, treatment = one_arm), "only one arm")
+})
+
 test_that("weights.sbw_fit() returns the same vector as sbw$weights", {
   df = make_toy_trial()
   sbw = sbw_weights(~ age + bmi, data = df, treatment = arm)

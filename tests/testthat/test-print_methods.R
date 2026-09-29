@@ -26,6 +26,19 @@ test_that("print.sbw_fit shows the header and arm counts, returning x invisibly"
   expect_identical(out, sbw)
 })
 
+test_that("print.sbw_fit names the treated and control levels for a character treatment", {
+  df = make_print_toy()
+  df$arm_chr = ifelse(df$arm == 1, "placebo", "drug")
+  sbw = sbw_weights(~ age + bmi, data = df, treatment = arm_chr)
+
+  # alphabetical: drug = 0 (control), placebo = 1 (treated)
+  expect_output(print(sbw), "treated [placebo]", fixed = TRUE)
+  expect_output(print(sbw), "control [drug]", fixed = TRUE)
+
+  sbw_num = sbw_weights(~ age + bmi, data = df, treatment = arm)
+  expect_false(any(grepl("[", capture.output(print(sbw_num)), fixed = TRUE)))
+})
+
 test_that("print.summary.sbw_fit shows the balance table and ESS", {
   df = make_print_toy()
   s = summary(sbw_weights(~ age + bmi, data = df, treatment = arm))

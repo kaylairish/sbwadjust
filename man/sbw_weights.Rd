@@ -14,7 +14,9 @@ sbw_weights(balance, data, treatment)
 
 \item{treatment}{Treatment assignment: either a column name in \code{data},
 unquoted (\code{treatment = arm}) or quoted (\code{treatment = "arm"}), or a vector. Accepts numeric
-0/1, logical, or a two-level factor/character vector.}
+0/1, logical, or a two-level factor/character vector. For a factor, the
+second level is treated (coded 1); for a character vector, the second in
+alphabetical order. Use a factor with explicit \code{levels} to control this.}
 }
 \value{
 An object of class \code{sbw_fit} with elements \code{weights}, \code{n_clipped},

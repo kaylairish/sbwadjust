@@ -31,6 +31,12 @@
   (`treatment = "arm"`, or a variable holding it), not only unquoted.
   Previously a quoted name failed with a misleading "exactly two levels"
   error.
+* `sbw_weights()` now gives clear errors for a treatment with missing values
+  or with only one arm, which previously failed inside the solver with
+  unrelated messages (e.g. "system is exactly singular").
+* `?sbw_weights` now states which level of a factor or character treatment
+  is treated (the second level; alphabetical for character), and
+  `print.sbw_fit()` names the treated and control levels in that case.
 
 # sbwadjust 0.2.0
 

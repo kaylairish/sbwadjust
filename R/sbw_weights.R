@@ -28,14 +28,15 @@
 #'   names are "0" and "1", and for logical input "FALSE" and "TRUE").
 #' @keywords internal
 .recode_treatment = function(raw) {
+  if (anyNA(raw)) stop("Missing values in `treatment` are not supported.")
+  if (length(unique(raw)) < 2L) {
+    stop("`treatment` has only one arm; both arms need at least one unit.")
+  }
   if (is.logical(raw)) {
     return(list(A = as.integer(raw), levels = c(`FALSE` = 0L, `TRUE` = 1L)))
   }
   if (is.numeric(raw)) {
-    u = sort(unique(raw))
-    if (!isTRUE(all.equal(u, c(0, 1)))) {
-      stop("Numeric `treatment` must be coded 0/1.")
-    }
+    if (!all(raw %in% c(0, 1))) stop("Numeric `treatment` must be coded 0/1.")
     return(list(A = as.integer(raw), levels = c(`0` = 0L, `1` = 1L)))
   }
   f = factor(raw)
@@ -86,7 +87,9 @@
 #' @param data Data frame containing the balance covariates and treatment.
 #' @param treatment Treatment assignment: either a column name in `data`,
 #'   unquoted (`treatment = arm`) or quoted (`treatment = "arm"`), or a vector. Accepts numeric
-#'   0/1, logical, or a two-level factor/character vector.
+#'   0/1, logical, or a two-level factor/character vector. For a factor, the
+#'   second level is treated (coded 1); for a character vector, the second in
+#'   alphabetical order. Use a factor with explicit `levels` to control this.
 #' @return An object of class `sbw_fit` with elements `weights`, `n_clipped`,
 #'   `max_abs_clipped` (see [get_sbws_for_study()]), `balance` (the formula),
 #'   `treatment_name`, `treatment_levels`, `treatment` (recoded 0/1),
@@ -138,8 +141,15 @@ sbw_weights = function(balance, data, treatment) {
 print.sbw_fit = function(x, ...) {
   cat("<sbw_fit>\n")
   cat("  balance: ", deparse(x$balance), "\n", sep = "")
-  cat("  n:       ", x$n, " (", sum(x$treatment == 1L), " treated, ",
-      sum(x$treatment == 0L), " control)\n", sep = "")
+  # name the arms when the treated level isn't self-evident (factor/character)
+  lv = names(x$treatment_levels)
+  arm_label = if (identical(lv, c("0", "1")) || identical(lv, c("FALSE", "TRUE"))) {
+    c("", "")
+  } else {
+    paste0(" [", lv, "]")
+  }
+  cat("  n:       ", x$n, " (", sum(x$treatment == 1L), " treated", arm_label[2], ", ",
+      sum(x$treatment == 0L), " control", arm_label[1], ")\n", sep = "")
   if (x$n_clipped > 0L) {
     cat("  note:    ", x$n_clipped,
         " weight(s) clipped at 0 (nonnegative-QP fallback used)\n", sep = "")
