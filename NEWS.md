@@ -47,6 +47,9 @@
   in the solver rather than dropped units. `summary()` does the same: its
   `n_clipped` / `max_abs_clipped` elements are replaced by `n_zero` (by
   arm), and its balance table prints to 4 significant digits.
+* `summary()` no longer reports an effective sample size. The Kish ESS
+  measures how concentrated the weights are, not the precision of the
+  treatment-effect estimate, and was easy to misread as the latter.
 
 # sbwadjust 0.2.0
 

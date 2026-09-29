@@ -223,9 +223,8 @@ weights.sbw_fit = function(object, ...) object$weights
 #' @param ... Currently unused.
 #' @return An object of class `summary.sbw_fit`, printed by
 #'   `print.summary.sbw_fit()`, with elements `balance` (unweighted and
-#'   SBW-weighted arm means of each balance column), `ess_treated`,
-#'   `ess_control` (Kish effective sample sizes), `n_treated`, `n_control`, and
-#'   `n_zero` (units with weight 0, by arm).
+#'   SBW-weighted arm means of each balance column), `n_treated`, `n_control`,
+#'   and `n_zero` (units with weight 0, by arm).
 #' @export
 summary.sbw_fit = function(object, ...) {
   X = object$X
@@ -233,7 +232,6 @@ summary.sbw_fit = function(object, ...) {
   w = object$weights
 
   wmean = function(v, wt) sum(v * wt) / sum(wt)
-  ess = function(wt) sum(wt)^2 / sum(wt^2)
 
   balance_tbl = data.frame(
     covariate = colnames(X),
@@ -247,8 +245,6 @@ summary.sbw_fit = function(object, ...) {
   structure(
     list(
       balance = balance_tbl,
-      ess_treated = ess(w[A == 1L]),
-      ess_control = ess(w[A == 0L]),
       n_treated = sum(A == 1L),
       n_control = sum(A == 0L),
       n_zero = .n_zero_by_arm(w, A)
@@ -261,12 +257,9 @@ summary.sbw_fit = function(object, ...) {
 print.summary.sbw_fit = function(x, ...) {
   cat("Balance (unweighted vs. SBW-weighted arm means):\n")
   print(x$balance, digits = 4, row.names = FALSE)
-  cat("\nEffective sample size: ",
-      round(x$ess_treated, 1), " treated (of ", x$n_treated, "), ",
-      round(x$ess_control, 1), " control (of ", x$n_control, ")\n", sep = "")
   if (any(x$n_zero > 0L)) {
     n_arm = c(treated = x$n_treated, control = x$n_control)
-    cat("Zero weights: ", .zero_weight_phrase(x$n_zero, n_arm),
+    cat("\nZero weights: ", .zero_weight_phrase(x$n_zero, n_arm),
         " units got weight 0.\n", sep = "")
   }
   invisible(x)

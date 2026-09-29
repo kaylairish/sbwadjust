@@ -61,13 +61,13 @@ test_that("print.sbw_fit keeps a long balance formula on one line, without depar
   expect_false(any(grepl("\\+\\s{2,}", out)))
 })
 
-test_that("print.summary.sbw_fit shows the balance table and ESS", {
+test_that("print.summary.sbw_fit shows the balance table", {
   df = make_print_toy()
   s = summary(sbw_weights(~ age + bmi, data = df, treatment = arm))
 
   expect_s3_class(s, "summary.sbw_fit")
   expect_output(print(s), "Balance")
-  expect_output(print(s), "Effective sample size")
+  expect_false(any(grepl("Effective sample size", capture.output(print(s)), fixed = TRUE)))
   # both balance covariates are named in the printed table
   expect_output(print(s), "age")
   expect_output(print(s), "bmi")

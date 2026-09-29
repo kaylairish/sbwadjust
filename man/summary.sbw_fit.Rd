@@ -14,9 +14,8 @@
 \value{
 An object of class \code{summary.sbw_fit}, printed by
 \code{print.summary.sbw_fit()}, with elements \code{balance} (unweighted and
-SBW-weighted arm means of each balance column), \code{ess_treated},
-\code{ess_control} (Kish effective sample sizes), \code{n_treated}, \code{n_control}, and
-\code{n_zero} (units with weight 0, by arm).
+SBW-weighted arm means of each balance column), \code{n_treated}, \code{n_control},
+and \code{n_zero} (units with weight 0, by arm).
 }
 \description{
 Summarize an \code{sbw_fit}: balance table and weight diagnostics
