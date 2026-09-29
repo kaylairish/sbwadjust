@@ -13,8 +13,7 @@ boot_km_ratio(
   B = 1500,
   alpha = 0.05,
   ci_method = c("wald", "percentile"),
-  seed = NULL,
-  verbose = FALSE
+  seed = NULL
 )
 }
 \arguments{
@@ -36,8 +35,6 @@ fit the SBW weights.}
 \item{ci_method}{Either \code{"wald"} (default) or \code{"percentile"}.}
 
 \item{seed}{Optional seed set at the start of the bootstrap.}
-
-\item{verbose}{Currently unused; reserved for future diagnostic output.}
 }
 \value{
 A list with \code{MC_fail}, \code{log_est}, \code{est}, \code{se_log}, \code{ci_log}, \code{ci},
@@ -53,5 +50,7 @@ log-ratio, then builds either a Wald CI (log scale) or a percentile CI
 falls back to the unadjusted KM ratio and sets \code{MC_fail = TRUE}; if even
 the unadjusted ratio is undefined (a double-degenerate case with no valid
 fallback), throws an error rather than returning a nonsense finite
-estimate.
+estimate. If the SBW fit or weighted KM ratio fails on an individual
+bootstrap resample, the unadjusted KM ratio is used for that resample;
+\code{boot_fail_rate} reports the fraction of resamples where this happened.
 }

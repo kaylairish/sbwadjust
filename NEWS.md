@@ -11,6 +11,10 @@
   `se(log S)` is now computed directly as `se(S) / S`, which gives identical
   results except that an arm with no events by `t0` (S = 1) now contributes
   zero to `se_log` instead of making it `NaN`.
+* `boot_km_ratio()`: dropped the unused `verbose` argument; the SBW clipping
+  summaries are now `NA` (not `-Inf`/`NaN` with a warning) when no bootstrap
+  resample's SBW fit succeeds; the help page now documents that a failed
+  resample uses the unadjusted KM ratio.
 * `km_ratio_greenwood()` now accepts a factor treatment indicator, and its
   help page notes that the SE treats the weights as fixed.
 

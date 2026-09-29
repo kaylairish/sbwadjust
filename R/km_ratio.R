@@ -97,7 +97,9 @@ km_ratio_greenwood = function(time, status, A, t0, alpha = 0.05, weights = NULL)
 #' falls back to the unadjusted KM ratio and sets `MC_fail = TRUE`; if even
 #' the unadjusted ratio is undefined (a double-degenerate case with no valid
 #' fallback), throws an error rather than returning a nonsense finite
-#' estimate.
+#' estimate. If the SBW fit or weighted KM ratio fails on an individual
+#' bootstrap resample, the unadjusted KM ratio is used for that resample;
+#' `boot_fail_rate` reports the fraction of resamples where this happened.
 #'
 #' @param time Event/censoring time.
 #' @param status Event indicator (1 = event, 0 = censored).
@@ -109,7 +111,6 @@ km_ratio_greenwood = function(time, status, A, t0, alpha = 0.05, weights = NULL)
 #' @param alpha Significance level for the confidence interval (default 0.05).
 #' @param ci_method Either `"wald"` (default) or `"percentile"`.
 #' @param seed Optional seed set at the start of the bootstrap.
-#' @param verbose Currently unused; reserved for future diagnostic output.
 #' @return A list with `MC_fail`, `log_est`, `est`, `se_log`, `ci_log`, `ci`,
 #'   `boot_fail_rate`, `boot_n_finite_reps`, and SBW clipping diagnostics
 #'   (`sbw_n_clipped_full`, `sbw_max_abs_clipped_full`,
@@ -120,8 +121,7 @@ boot_km_ratio = function(time, status, A, X_subset, t0,
                          B = 1500,
                          alpha = 0.05,
                          ci_method = c("wald", "percentile"),
-                         seed = NULL,
-                         verbose = FALSE) {
+                         seed = NULL) {
 
   ci_method = match.arg(ci_method)
   if (!is.null(seed)) set.seed(seed)
@@ -191,6 +191,8 @@ boot_km_ratio = function(time, status, A, X_subset, t0,
 
   nclip_boot = rep(NA_integer_, B)
   maxclip_boot = rep(NA_real_, B)
+  # NA rather than -Inf/NaN (and a warning) if no resample's SBW fit succeeded
+  clip_summary = function(f, x) if (all(is.na(x))) NA else f(x, na.rm = TRUE)
 
   for (b in seq_len(B)) {
     idx = sample.int(n, n, replace = TRUE)
@@ -247,9 +249,9 @@ boot_km_ratio = function(time, status, A, X_subset, t0,
 
       sbw_n_clipped_full = point_est$nclip_full,
       sbw_max_abs_clipped_full = point_est$maxclip_full,
-      sbw_n_clipped_boot_mean = mean(nclip_boot, na.rm = TRUE),
-      sbw_n_clipped_boot_max  = max(nclip_boot, na.rm = TRUE),
-      sbw_max_abs_clipped_boot_max = max(maxclip_boot, na.rm = TRUE)
+      sbw_n_clipped_boot_mean = clip_summary(mean, nclip_boot),
+      sbw_n_clipped_boot_max  = clip_summary(max, nclip_boot),
+      sbw_max_abs_clipped_boot_max = clip_summary(max, maxclip_boot)
     ))
   }
 
@@ -272,8 +274,8 @@ boot_km_ratio = function(time, status, A, X_subset, t0,
     # SBW clipping diagnostics
     sbw_n_clipped_full = point_est$nclip_full,
     sbw_max_abs_clipped_full = point_est$maxclip_full,
-    sbw_n_clipped_boot_mean = mean(nclip_boot, na.rm = TRUE),
-    sbw_n_clipped_boot_max  = max(nclip_boot, na.rm = TRUE),
-    sbw_max_abs_clipped_boot_max = max(maxclip_boot, na.rm = TRUE)
+    sbw_n_clipped_boot_mean = clip_summary(mean, nclip_boot),
+    sbw_n_clipped_boot_max  = clip_summary(max, nclip_boot),
+    sbw_max_abs_clipped_boot_max = clip_summary(max, maxclip_boot)
   )
 }
